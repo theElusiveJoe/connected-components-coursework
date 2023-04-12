@@ -1,4 +1,4 @@
-module github.com/theElusiveJoe/connected_componentd_db_coursework
+module connectedComponents
 
 go 1.20
 
