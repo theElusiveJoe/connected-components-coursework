@@ -1,5 +1,7 @@
 package fastSV
 
+import "fmt"
+
 func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	// Step 0
 	// заполняем лес пнями
@@ -14,9 +16,11 @@ func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	var v, u, pu, gpv, gpu uint32
 	edgesNum := len(edges1)
 
+	n := 0
+
 	for changed {
 		changed = false
-
+		n++
 		// STEP 1
 		// Stochastic hooking
 		for i := 0; i < edgesNum; i++ {
@@ -87,7 +91,7 @@ func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 
 		copy(f, f_next)
 	}
-
+	fmt.Println(n, "iterations")
 	return f_next
 }
 

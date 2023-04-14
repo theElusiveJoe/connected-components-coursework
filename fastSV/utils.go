@@ -2,13 +2,12 @@ package fastSV
 
 import (
 	"encoding/csv"
-	"fmt"
 	"log"
 	"os"
 )
 
 // принимает имя csv-файла, возвращает массив его строк
-func getPairsReader(filename string) [][]string {
+func getEdgesReader(filename string) [][]string {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -35,21 +34,12 @@ func createIndexAndPairsLists(rows [][]string) (uint32, map[string]uint32, map[u
 			}
 			edges[i] = append(edges[i], mapa[row[i]])
 		}
-		if _, err := mapa[row[1]]; !err {
-			mapa[row[1]] = n
-			mapaRev[n] = row[1]
-			n++
-		}
 	}
 	return n, mapa, mapaRev, edges[0], edges[1]
 }
 
-func GetPairs(filename string) (uint32, map[string]uint32, map[uint32]string, []uint32, []uint32) {
-	return createIndexAndPairsLists(getPairsReader(filename))
-}
-
-func phl() {
-	fmt.Println("-----------------")
+func GetEdges(filename string) (uint32, map[string]uint32, map[uint32]string, []uint32, []uint32) {
+	return createIndexAndPairsLists(getEdgesReader(filename))
 }
 
 func StarForestToComponents(startsForest []uint32) [][]uint32 {
