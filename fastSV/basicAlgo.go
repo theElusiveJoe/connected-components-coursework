@@ -1,5 +1,7 @@
 package fastSV
 
+import "connectedComponents/utils"
+
 // максимально базовый алгоритм
 func basic(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	f := make([]uint32, nodesNum)
@@ -28,7 +30,7 @@ func basic(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 }
 
 func BasicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) [][]uint32 {
-	return StarForestToComponents(
+	return utils.StarForestToComponents(
 		basic(uint32(nodesNum), edges1, edges2),
 	)
 }

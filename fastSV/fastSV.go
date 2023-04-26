@@ -1,6 +1,7 @@
 package fastSV
 
 import "fmt"
+import "connectedComponents/utils"
 
 func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	// Step 0
@@ -96,7 +97,7 @@ func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 }
 
 func FastSVCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) [][]uint32 {
-	return StarForestToComponents(
+	return utils.StarForestToComponents(
 		fastSV(uint32(nodesNum), edges1, edges2),
 	)
 }

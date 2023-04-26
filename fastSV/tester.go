@@ -3,6 +3,7 @@ package fastSV
 import (
 	"fmt"
 	"os"
+	"connectedComponents/utils"
 )
 
 func compareResults(baseRes [][]uint32, fastSVRes [][]uint32) bool {
@@ -24,7 +25,7 @@ func compareResults(baseRes [][]uint32, fastSVRes [][]uint32) bool {
 }
 
 func CompareOneTest(filename string) bool {
-	nodesNum, _, _, edges1, edges2 := GetEdges(filename)
+	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
 	baseRes := BasicCCSearch(nodesNum, edges1, edges2)
 	fastSVRes := FastSVCCSearch(nodesNum, edges1, edges2)
 	return compareResults(baseRes, fastSVRes)
@@ -55,6 +56,6 @@ func CompareManyTests(dir string) (bool, map[string]bool) {
 }
 
 func TestOne(filename string) [][]uint32 {
-	nodesNum, _, _, edges1, edges2 := GetEdges(filename)
+	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
 	return FastSVCCSearch(nodesNum, edges1, edges2)
 }

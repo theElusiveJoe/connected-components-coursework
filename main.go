@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	fastSV.TestAll("tests/graphs/")
+	fastSV.CompareManyTests("tests/graphs/")
 }
