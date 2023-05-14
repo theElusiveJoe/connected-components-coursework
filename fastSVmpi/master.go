@@ -3,6 +3,7 @@ package fastSVmpi
 import (
 	"connectedComponents/utils"
 	"fmt"
+	"strconv"
 )
 
 /*
@@ -20,8 +21,7 @@ type masterNode struct {
 	nodesNum     uint32
 }
 
-func (master *masterNode) init(filename string, slavesNum int) {
-	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
+func (master *masterNode) init(nodesNum uint32, edges1 []uint32, edges2 []uint32, slavesNum int) {
 	master.nodesNum = (uint32)(nodesNum)
 	master.edgesNum = (uint32)(len(edges1))
 	master.edges1, master.edges2 = edges1, edges2
@@ -57,7 +57,7 @@ func (master *masterNode) print() {
 }
 
 func (master *masterNode) bcastTag(tag C.int) {
-	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, master.slavesNum+1)
+	mpiBcastTagViaSend(tag, 1, master.slavesNum+1)
 }
 
 func (master *masterNode) delegateEdge(i uint32) {
@@ -83,11 +83,13 @@ func (master *masterNode) manageCCSearch() bool {
 		mpiSkipIncoming(TAG_FINISHED_PARENT_PROPOSITION)
 		slavesFiishedPPNum++
 	}
+	// fmt.Printf("=> MATSER: bcasting all slaves finished tag\n")
 	master.bcastTag(TAG_ALL_SLAVES_FINISHED_PARENT_PROPOSITION)
 	changed := false
 
 	for i := 0; i < master.slavesNum; i++ {
 		ch, _ := mpiRecvBool(TAG_SLAVE_WAS_CHANGED)
+		fmt.Println("slave wants to continue:", ch)
 		changed = changed || ch
 	}
 
@@ -96,8 +98,8 @@ func (master *masterNode) manageCCSearch() bool {
 	return changed
 }
 
-func (master *masterNode) collectResult() map[uint32]uint32 {
-	res := make(map[uint32]uint32)
+func (master *masterNode) collectResult() []uint32 {
+	res := make([]uint32, master.nodesNum)
 	master.bcastTag(TAG_SEND_ME_RESULT)
 	for i := 0; i < int(master.nodesNum); i++ {
 		arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_I_SEND_RESULT)
@@ -106,4 +108,17 @@ func (master *masterNode) collectResult() map[uint32]uint32 {
 		res[uint32(x)] = uint32(xParent)
 	}
 	return res
+}
+
+func (master *masterNode) collectResultToTable() {
+	tableWriter := utils.GetEdgesWriter("temp.csv")
+	master.bcastTag(TAG_SEND_ME_RESULT)
+	for i := 0; i < int(master.nodesNum); i++ {
+		arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_I_SEND_RESULT)
+		x, xParent := C.getArray(arr, 0), C.getArray(arr, 1)
+		fmt.Println(x, "->", xParent)
+		C.freeArray(arr)
+		tableWriter.Write([]string{strconv.FormatUint(uint64(x), 10), strconv.FormatUint(uint64(xParent), 10)})
+	}
+	tableWriter.Flush()
 }
