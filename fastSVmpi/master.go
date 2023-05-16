@@ -30,11 +30,11 @@ func (master *masterNode) init(nodesNum uint32, edges1 []uint32, edges2 []uint32
 
 	for i := 0; i < int(master.nodesNum); i++ {
 		var d uint32
-		if i < 4 {
-			d = uint32(1)
-		} else {
-			d = (uint32)(i%(master.slavesNum) + 1)
-		}
+		d = (uint32)(i%(master.slavesNum) + 1)
+		// if i < 4 {
+		// d = uint32(1)
+		// } else {
+		// }
 		master.distribution[i] = d // (uint32)(i%(master.slavesNum) + 1) //uint8(rand.Intn(worldSize-1) + 1)
 	}
 }
@@ -77,16 +77,15 @@ func (master *masterNode) delegateAllEdges() {
 	}
 }
 
-func (master *masterNode) manageCCSearch() bool {
-	var slavesFiishedPPNum int
-	for slavesFiishedPPNum < master.slavesNum {
-		mpiSkipIncoming(TAG_FINISHED_PARENT_PROPOSITION)
-		slavesFiishedPPNum++
+func (master *masterNode) manageExpectedPPNCounting() {
+	for i := 0; i < master.slavesNum; i++ {
+		mpiSkipIncoming(TAG_ALL_MY_MESSAGES_REACHED_TARGET)
 	}
-	// fmt.Printf("=> MATSER: bcasting all slaves finished tag\n")
-	master.bcastTag(TAG_ALL_SLAVES_FINISHED_PARENT_PROPOSITION)
-	changed := false
+	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, master.slavesNum+1)
+}
 
+func (master *masterNode) manageCCSearch() bool {
+	changed := false
 	for i := 0; i < master.slavesNum; i++ {
 		ch, _ := mpiRecvBool(TAG_SLAVE_WAS_CHANGED)
 		fmt.Println("slave wants to continue:", ch)

@@ -25,73 +25,21 @@ func mpiBarrier(communicator C.MPI_Comm) {
 	C.MPI_Barrier(communicator)
 }
 
+// COMMUNOCATION WITH MASTER
 func mpiBcastTagViaSend(tag C.int, a int, b int) {
 	for i := a; i < b; i++ {
-		C.MPI_Send(
-			unsafe.Pointer(nil),
-			0,
-			C.MPI_UNSIGNED,
-			(C.int)(i),
-			tag,
-			C.MPI_COMM_WORLD,
-		)
+		mpiSendTag(tag, i)
 	}
 }
-
 func mpiBcastBoolViaSend(bol bool, tag C.int, a int, b int) {
 	for i := a; i < b; i++ {
-		C.MPI_Send(
-			unsafe.Pointer(&bol),
-			1,
-			C.MPI_C_BOOL,
-			(C.int)(i),
-			tag,
-			C.MPI_COMM_WORLD,
-		)
+		mpiSendBool(bol, i, tag)
 	}
 }
-
 func mpiReportToMaster(tag C.int) {
-	C.MPI_Send(
-		unsafe.Pointer(nil),
-		0,
-		C.MPI_INT,
-		0,
-		tag,
-		C.MPI_COMM_WORLD,
-	)
+	mpiSendTag(tag, MASTER)
 }
 
-func mpiSendUintArray(source []uint32, recipient int, tag C.int) {
-	arr := C.createArray((C.int)(len(source)))
-	for i := 0; i < len(source); i++ {
-		C.setArray(arr, (C.uint)(source[i]), (C.int)(i))
-	}
-	C.MPI_Send(
-		unsafe.Pointer(arr),  // что посылаем
-		(C.int)(len(source)), // сколько
-		C.MPI_UNSIGNED,       // какого типа
-		(C.int)(recipient),   // куда посылаем
-		tag,                  // тэг
-		C.MPI_COMM_WORLD,     // коммуникатор
-	)
-	C.freeArray(arr)
-}
-
-func mpiRecvUintArray(msgLen int, source int, tag C.int) (*C.uint, C.MPI_Status) {
-	arr := C.createArray((C.int)(msgLen))
-	var status C.MPI_Status
-	C.MPI_Recv(
-		unsafe.Pointer(arr),
-		(C.int)(msgLen),
-		C.MPI_UNSIGNED,
-		(C.int)(source),
-		tag,
-		C.MPI_COMM_WORLD,
-		&status,
-	)
-	return arr, status
-}
 
 func mpiCheckIncoming(tag C.int) bool {
 	var flag C.int
@@ -99,6 +47,7 @@ func mpiCheckIncoming(tag C.int) bool {
 	return flag == 1
 }
 
+// TAG
 func mpiSkipIncoming(tag C.int) {
 	C.MPI_Recv(
 		unsafe.Pointer(nil),
@@ -110,7 +59,31 @@ func mpiSkipIncoming(tag C.int) {
 		C.MPI_STATUS_IGNORE,
 	)
 }
+func mpiSkipIncomingAndResponce(intag C.int, outtag C.int) {
+	var status C.MPI_Status
+	C.MPI_Recv(
+		unsafe.Pointer(nil),
+		0,
+		C.MPI_UNSIGNED,
+		C.MPI_ANY_SOURCE,
+		intag,
+		C.MPI_COMM_WORLD,
+		&status,
+	)
+	mpiSendTag(outtag, int(status.MPI_SOURCE))
+}
+func mpiSendTag(tag C.int, recipient int){
+	C.MPI_Send(
+		unsafe.Pointer(nil),
+		0,
+		C.MPI_UNSIGNED,
+		(C.int)(recipient),
+		tag,
+		C.MPI_COMM_WORLD,
+	)
+}
 
+// UINT
 func mpiSendUint(num uint32, recipient int, tag C.int) {
 	C.MPI_Send(
 		unsafe.Pointer(&num), // что посылаем
@@ -121,7 +94,6 @@ func mpiSendUint(num uint32, recipient int, tag C.int) {
 		C.MPI_COMM_WORLD,     // коммуникатор
 	)
 }
-
 func mpiRecvUint(tag C.int) (uint32, C.MPI_Status) {
 	var num uint32
 	var status C.MPI_Status
@@ -137,6 +109,7 @@ func mpiRecvUint(tag C.int) (uint32, C.MPI_Status) {
 	return num, status
 }
 
+// BOOL
 func mpiSendBool(b bool, recipient int, tag C.int) {
 	C.MPI_Send(
 		unsafe.Pointer(&b), // что посылаем
@@ -147,7 +120,6 @@ func mpiSendBool(b bool, recipient int, tag C.int) {
 		C.MPI_COMM_WORLD,   // коммуникатор
 	)
 }
-
 func mpiRecvBool(tag C.int) (bool, C.MPI_Status) {
 	var b bool
 	var status C.MPI_Status
@@ -161,4 +133,35 @@ func mpiRecvBool(tag C.int) (bool, C.MPI_Status) {
 		&status,
 	)
 	return b, status
+}
+
+// UINT ARRAY
+func mpiSendUintArray(source []uint32, recipient int, tag C.int) {
+	arr := C.createArray((C.int)(len(source)))
+	for i := 0; i < len(source); i++ {
+		C.setArray(arr, (C.uint)(source[i]), (C.int)(i))
+	}
+	C.MPI_Send(
+		unsafe.Pointer(arr),  // что посылаем
+		(C.int)(len(source)), // сколько
+		C.MPI_UNSIGNED,       // какого типа
+		(C.int)(recipient),   // куда посылаем
+		tag,                  // тэг
+		C.MPI_COMM_WORLD,     // коммуникатор
+	)
+	C.freeArray(arr)
+}
+func mpiRecvUintArray(msgLen int, source int, tag C.int) (*C.uint, C.MPI_Status) {
+	arr := C.createArray((C.int)(msgLen))
+	var status C.MPI_Status
+	C.MPI_Recv(
+		unsafe.Pointer(arr),
+		(C.int)(msgLen),
+		C.MPI_UNSIGNED,
+		(C.int)(source),
+		tag,
+		C.MPI_COMM_WORLD,
+		&status,
+	)
+	return arr, status
 }

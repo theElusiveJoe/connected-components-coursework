@@ -19,7 +19,7 @@ type slaveNode struct {
 	edges2                     []uint32
 	edgesNum                   int
 	changed                    bool
-	expextedParentProposalsNum uint32
+	expectedParentProposalsNum uint32
 	recievedParentProposalsNum uint32
 }
 
@@ -48,13 +48,12 @@ func (slave *slaveNode) addEdge(v1 uint32, v2 uint32, v2er uint32) {
 	slave.edges2 = append(slave.edges2, v2)
 	slave.f[v1] = v1
 	if v2er != uint32(slave.rank) {
+		fmt.Printf("INTERNODE EDGE BETWEEN %d and %d (%d-%d)\n", slave.rank, v2er, v1, v2)
 		slave.distribution[v2] = v2er
 		slave.foreignf[v2] = v2
 	} else {
 		slave.f[v2] = v2
-		slave.expextedParentProposalsNum++
 	}
-	fmt.Printf("-> slave %d: got edge (%d, %d) with v2 on %d\n", slave.rank, v1, v2, v2er)
 }
 
 func (slave *slaveNode) getEdgeAndServers(i int) (uint32, uint32, uint32, uint32) {
@@ -91,7 +90,7 @@ func (slave *slaveNode) setChangedTrue()  { slave.changed = true }
 func (slave *slaveNode) setChangedFalse() { slave.changed = false }
 func (slave *slaveNode) wasChanged() bool { return slave.changed }
 
-// нулевая стадия - принимаем новые ребра, пока не получим сигнал об остановке
+// первая стадия - принимаем новые ребра, пока не получим сигнал об остановке
 func (slave *slaveNode) recvEdgesTillGetBreakTag(breakTag C.int) {
 	recvEdgeOrBreak := func(slave *slaveNode, breakTag C.int) bool {
 		arr, status := mpiRecvUintArray(3, MASTER, C.MPI_ANY_TAG)
@@ -108,6 +107,60 @@ func (slave *slaveNode) recvEdgesTillGetBreakTag(breakTag C.int) {
 	}
 
 	for recvEdgeOrBreak(slave, breakTag) {
+	}
+}
+
+// стадия 1.5 - слейвы договариваются о количестве предстоящих предложений родителей
+func (slave *slaveNode) countExpectedParentProposalsNum() {
+	// если слейв A отвечает за узлы {a1, a2, ... an}, n>=1
+	// слейв B отвечает за узел b
+	// и есть ребра {(a1,b), (a2,b) ... (an,b)}
+	// то A пошлет на B один parent proposal
+
+	slave.expectedParentProposalsNum = 0
+	// в конце counter должен занулиться
+	// таким образом мы удостоверимся, что все сообщения дошли
+	counter := 0
+
+	// посылаем сообщение для каждого foreign node`а
+	for _, v2er := range slave.distribution {
+		for mpiCheckIncoming(TAG_BRUH_I_ALREADY_KNEW) {
+			mpiSkipIncoming(TAG_BRUH_I_ALREADY_KNEW)
+			counter--
+			if slave.rank == 1 {
+				fmt.Println("HE KNew", counter)
+			}
+		}
+		for mpiCheckIncoming(TAG_UR_INNER_NODE_IS_MY_FOREIGN) {
+			mpiSkipIncomingAndResponce(TAG_UR_INNER_NODE_IS_MY_FOREIGN, TAG_BRUH_I_ALREADY_KNEW)
+			slave.expectedParentProposalsNum++
+		}
+		mpiSendTag(TAG_UR_INNER_NODE_IS_MY_FOREIGN, int(v2er))
+		counter++
+	}
+
+	for counter != 0 {
+		for mpiCheckIncoming(TAG_BRUH_I_ALREADY_KNEW) {
+			mpiSkipIncoming(TAG_BRUH_I_ALREADY_KNEW)
+			counter--
+			if slave.rank == 1 {
+				fmt.Println("HE KNew", counter)
+			}
+		}
+		for mpiCheckIncoming(TAG_UR_INNER_NODE_IS_MY_FOREIGN) {
+			mpiSkipIncomingAndResponce(TAG_UR_INNER_NODE_IS_MY_FOREIGN, TAG_BRUH_I_ALREADY_KNEW)
+			slave.expectedParentProposalsNum++
+		}
+	}
+	mpiReportToMaster(TAG_ALL_MY_MESSAGES_REACHED_TARGET)
+	for {
+		for mpiCheckIncoming(TAG_UR_INNER_NODE_IS_MY_FOREIGN) {
+			mpiSkipIncomingAndResponce(TAG_UR_INNER_NODE_IS_MY_FOREIGN, TAG_BRUH_I_ALREADY_KNEW)
+			slave.expectedParentProposalsNum++
+		}
+		if mpiCheckIncoming(TAG_NEXT_PHASE) {
+			return
+		}
 	}
 }
 
@@ -150,7 +203,7 @@ func (slave *slaveNode) runParentProposals() bool {
 			slave.recievedParentProposalsNum++
 			arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_V1_PARENT_PROPOSITION)
 			v1, parentProposition := cGetArr(arr, 0), cGetArr(arr, 1)
-			fmt.Printf("slave %d: should i set f[ %d ] = %d: %t\n", slave.rank, v1, parentProposition, slave.getParent(v1) > parentProposition)
+			// fmt.Printf("slave %d: should i set f[ %d ] = %d: %t\n", slave.rank, v1, parentProposition, slave.getParent(v1) > parentProposition)
 			C.freeArray(arr)
 			if slave.getParent(v1) > parentProposition {
 				slave.setParent(v1, parentProposition)
@@ -162,34 +215,24 @@ func (slave *slaveNode) runParentProposals() bool {
 		// proposedParent - узлел графа B. Мы предлагаем поставить B в качестве родителя узла A
 		// foreignNoder - слейв, отвечающий за узел A. Туда мы и отправим запрос
 		foreignNoder := slave.getServer(foreignNode)
-		fmt.Println(slave.rank, "->", foreignNoder, "set f[", foreignNode, "] =", proposedParent)
+		// fmt.Println(slave.rank, "->", foreignNoder, "set f[", foreignNode, "] =", proposedParent)
 		mpiSendUintArray([]uint32{foreignNode, proposedParent}, int(foreignNoder),
 			TAG_V1_PARENT_PROPOSITION)
 	}
 
+	// пока мы еще ничего не получили
 	slave.recievedParentProposalsNum = 0
+	// шэрим результаты, но прием приоритетнее
 	for foreignNode, proposedParent := range slave.foreignf {
 		checkIncomingParentProposal(slave)
 		sendParentProposition(slave, foreignNode, proposedParent)
 	}
-	// fmt.Printf("-> slave %d: Ended parent proposals\n", slave.rank)
-
-	// отчитываемся о том, что закончили шэрить результаты
-	mpiReportToMaster(TAG_FINISHED_PARENT_PROPOSITION)
-	for {
-		// fmt.Printf("-> slave %d: Listening to incoming parent proposals\n", slave.rank)
-		// пока не получим сигнал о том, что все закончили
-		if mpiCheckIncoming(TAG_ALL_SLAVES_FINISHED_PARENT_PROPOSITION) {
-			// fmt.Printf("-> slave %d: Ended proposition listening\n", slave.rank)
-			break
-		}
-		// слущаем входящие предложения
+	fmt.Printf("slave %d:SENT ALL (%d)\n", slave.rank, len(slave.foreignf))
+	// допринимаем все, что должны
+	for slave.recievedParentProposalsNum < slave.expectedParentProposalsNum {
 		checkIncomingParentProposal(slave)
 	}
-
-	// все закончили добычу и обмен информацией
-	// пора ли нам завершится?
-
+	fmt.Printf("slave %d: RECVD ALL (%d)\n", slave.rank, slave.expectedParentProposalsNum)
 	// отправляем своё мнение
 	mpiSendBool(slave.changed, MASTER, TAG_SLAVE_WAS_CHANGED)
 	// и ждем команды - продолжать или нет

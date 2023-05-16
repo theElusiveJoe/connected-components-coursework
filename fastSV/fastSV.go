@@ -1,9 +1,11 @@
 package fastSV
 
-import "fmt"
-import "connectedComponents/utils"
+import (
+	"connectedComponents/utils"
+	"fmt"
+)
 
-func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
+func fastSVCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	// Step 0
 	// заполняем лес пнями
 	f := make([]uint32, nodesNum)
@@ -96,8 +98,7 @@ func fastSV(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	return f_next
 }
 
-func FastSVCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) [][]uint32 {
-	return utils.StarForestToComponents(
-		fastSV(uint32(nodesNum), edges1, edges2),
-	)
+func FastSVCCSearch(filename string) []uint32 {
+	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
+	return fastSVCCSearch(nodesNum, edges1, edges2)
 }

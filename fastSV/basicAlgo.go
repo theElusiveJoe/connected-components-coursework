@@ -3,7 +3,7 @@ package fastSV
 import "connectedComponents/utils"
 
 // максимально базовый алгоритм
-func basic(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
+func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	f := make([]uint32, nodesNum)
 	for i := 0; i < len(f); i++ {
 		f[i] = uint32(i)
@@ -29,8 +29,7 @@ func basic(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	return f
 }
 
-func BasicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) [][]uint32 {
-	return utils.StarForestToComponents(
-		basic(uint32(nodesNum), edges1, edges2),
-	)
+func BasicCCSearch(filename string) []uint32 {
+	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
+	return basicCCSearch(nodesNum, edges1, edges2)
 }

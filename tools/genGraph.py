@@ -11,7 +11,7 @@ def genGraph(nodes_num, edges_num):
         "node1": l1, 
         "node2": l2
     })
-    filename = f'tests/graphs/synthGraph({nodes_num}:{edges_num}){uuid.uuid1()}.csv'
+    filename = f'tests/graphs/synthGraph-{nodes_num}-{edges_num}-{str(uuid.uuid1())[:8]}.csv'
     df.to_csv(
         filename, 
         index=False, header=False
@@ -20,7 +20,6 @@ def genGraph(nodes_num, edges_num):
 
 
 if __name__ == '__main__':
-    genGraph(
-        int(sys.argv[1]), 
-        int(sys.argv[2])
-    )
+    for i in range(2, 51, 3):
+        for j in range(1, 100, 3):
+            genGraph(i, j)
