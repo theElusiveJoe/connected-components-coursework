@@ -46,8 +46,7 @@ func basicMpiCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint3
 	var slave slaveNode
 
 	if rank == MASTER {
-		master.init(nodesNum, edges1, edges2, worldSize-1)
-		master.print()
+		master.init(nodesNum, edges1, edges2, worldSize-1, 24)
 	} else {
 		slave.init(rank)
 	}

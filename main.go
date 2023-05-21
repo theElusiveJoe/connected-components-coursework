@@ -1,13 +1,11 @@
 package main
 
-import (
-	"connectedComponents/fastSV"
-	"connectedComponents/fastSVmpi"
-	"connectedComponents/utils"
+// "connectedComponents/fastSV"
+// "connectedComponents/fastSVmpi"
+// "connectedComponents/utils"
 
-	"flag"
-	"fmt"
-)
+// "flag"
+// "fmt"
 
 /*
 #cgo linux LDFLAGS: -pthread -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi
@@ -16,19 +14,14 @@ import (
 #include <stdint.h>
 */
 import "C"
-
-// func runMpiCCSearch(filename string){
-// 	utils.
-// 	fastSVmpi.BasicMpiCCSearch()
-// }
-
-// var (
-// 	runmpi *string
-// )
-
-// func init() {
-// 	runmpi = flag.String("runmpi", "", "graph table, that we want to process with mpi")
-// }
+import (
+	"connectedComponents/distribution"
+	"connectedComponents/fastSV"
+	"connectedComponents/fastSVmpi"
+	"connectedComponents/utils"
+	"flag"
+	"fmt"
+)
 
 func main() {
 	var mpirun string
@@ -41,17 +34,25 @@ func main() {
 	}
 
 	// testfile := "tests/graphs/graph10.csv"
-	// fastSVmpi.AdapterForMpiBasicCCSearch(testfile)
+	// res:= fastSVmpi.BasicMpiCCSearch(testfile)
+	// fmt.Pr
 
-	utils.CompareManyTests(
-		fastSVmpi.AdapterForMpiBasicCCSearch,
-		fastSV.BasicCCSearch,
-		"tests/graphs/",
-	)
+	// utils.CompareManyTests(
+	// 	fastSVmpi.AdapterForMpiBasicCCSearch,
+	// 	fastSV.BasicCCSearch,
+	// 	"tests/graphs/",
+	// )
 
-	utils.CompareOneTest(
-		fastSVmpi.AdapterForMpiBasicCCSearch,
-		fastSV.BasicCCSearch,
-		"tests/graphs/graph1.csv",
-	)
+	// utils.CompareOneTest(
+	// 	fastSVmpi.AdapterForMpiBasicCCSearch,
+	// 	fastSV.BasicCCSearch,
+	// 	"tests/graphs/graph1.csv",
+	// )
+	test := "tests/graphs2/synthGraph-14l-190e.csv"
+	var dist distribution.Distributor
+	dist.FindDistributionFromFile(test, 10, 2294)
+
+	forest := fastSV.BasicCCSearch(test)
+	components := utils.StarForestToComponents(forest)
+	fmt.Println(len(components), "COMPONENTS")
 }

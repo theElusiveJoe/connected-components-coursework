@@ -33,3 +33,7 @@ func BasicCCSearch(filename string) []uint32 {
 	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
 	return basicCCSearch(nodesNum, edges1, edges2)
 }
+
+func BasicCCSearchAdapter(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
+	return basicCCSearch(nodesNum, edges1, edges2)
+}

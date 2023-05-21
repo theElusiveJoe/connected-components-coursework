@@ -1,6 +1,7 @@
 package fastSVmpi
 
 import (
+	"connectedComponents/distribution"
 	"connectedComponents/utils"
 	"fmt"
 	"strconv"
@@ -19,24 +20,30 @@ type masterNode struct {
 	distribution []uint32
 	slavesNum    int
 	nodesNum     uint32
+	hashNum      uint32
 }
 
-func (master *masterNode) init(nodesNum uint32, edges1 []uint32, edges2 []uint32, slavesNum int) {
+func (master *masterNode) init(nodesNum uint32, edges1 []uint32, edges2 []uint32, slavesNum int, hashNum int) {
 	master.nodesNum = (uint32)(nodesNum)
 	master.edgesNum = (uint32)(len(edges1))
 	master.edges1, master.edges2 = edges1, edges2
 	master.distribution = make([]uint32, master.nodesNum)
 	master.slavesNum = slavesNum
+	master.hashNum = uint32(hashNum)
+	var dist distribution.Distributor
+	master.distribution = dist.FindDistributionFromEdges(
+		edges1, edges2, uint32(master.slavesNum), uint32(master.hashNum),
+	)
 
-	for i := 0; i < int(master.nodesNum); i++ {
-		var d uint32
-		d = (uint32)(i%(master.slavesNum) + 1)
-		// if i < 4 {
-		// d = uint32(1)
-		// } else {
-		// }
-		master.distribution[i] = d // (uint32)(i%(master.slavesNum) + 1) //uint8(rand.Intn(worldSize-1) + 1)
-	}
+	// for i := 0; i < int(master.nodesNum); i++ {
+	// 	var d uint32
+	// 	d = (uint32)(i%(master.slavesNum) + 1)
+	// 	// if i < 4 {
+	// 	// d = uint32(1)
+	// 	// } else {
+	// 	// }
+	// 	master.distribution[i] = d // (uint32)(i%(master.slavesNum) + 1) //uint8(rand.Intn(worldSize-1) + 1)
+	// }
 }
 
 func (master *masterNode) getEdge(i uint32) (uint32, uint32) {
@@ -44,7 +51,8 @@ func (master *masterNode) getEdge(i uint32) (uint32, uint32) {
 }
 
 func (master *masterNode) whoServes(v uint32) uint32 {
-	return master.distribution[v]
+	fmt.Println(v, master.hashNum)
+	return master.distribution[v%master.hashNum]
 }
 
 func (master *masterNode) print() {

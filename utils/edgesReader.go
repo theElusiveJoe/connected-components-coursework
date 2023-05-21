@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
 	"os"
 )
@@ -35,7 +36,9 @@ func createIndexAndPairsLists(rows [][]string) (uint32, map[string]uint32, map[u
 			edges[i] = append(edges[i], mapa[row[i]])
 		}
 	}
+	fmt.Printf("-> {edges reader}: detected %d nodes and %d edges\n", n, len(edges[0]))
 	return n, mapa, mapaRev, edges[0], edges[1]
+
 }
 
 func GetEdges(filename string) (uint32, map[string]uint32, map[uint32]string, []uint32, []uint32) {
