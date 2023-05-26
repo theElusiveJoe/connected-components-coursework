@@ -4,6 +4,7 @@ package mpiSamples
 #include "mpi.h"
 #include "stdlib.h"
 #cgo linux LDFLAGS: -pthread -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi
+
 static int* makeArray(int size) {
 	return (int*)malloc(sizeof(int) * size);
 }
@@ -140,37 +141,39 @@ func SendRecvExample() {
 	C.MPI_Comm_rank(C.MPI_COMM_WORLD, intptr(&rank))
 	C.MPI_Comm_size(C.MPI_COMM_WORLD, intptr(&size))
 
-	secretNum := (rank+1)*100000 + 500
-	var elseSecretNum int
+	arr := C.makeArray(C.int(9999))
+	var n int
 
-	fmt.Printf("1 --- im %d of %d: %d\n", rank, size, secretNum)
-
-	C.MPI_Send(
-		unsafe.Pointer(&secretNum), // посылаем секретное число
-		1,
-		C.MPI_INT,
-		intprost((rank+1)%size), // нашей цели
-		0,
-		C.MPI_COMM_WORLD,
-	)
-
-	C.MPI_Barrier(C.MPI_COMM_WORLD)
 	if rank == 0 {
-		println("#######barrier##########")
+		for {
+			C.MPI_Send(
+				unsafe.Pointer(arr), // посылаем секретное число
+				9999,
+				C.MPI_INT,
+				intprost(1), // нашей цели
+				0,
+				C.MPI_COMM_WORLD,
+			)
+			n++
+			fmt.Println("SENT", n)
+		}
 	}
-	C.MPI_Barrier(C.MPI_COMM_WORLD)
 
-	C.MPI_Recv(
-		unsafe.Pointer(&elseSecretNum), // получаем чужое секретное число
-		1,
-		C.MPI_INT,
-		intprost((rank-1)%size),
-		0,
-		C.MPI_COMM_WORLD,
-		C.MPI_STATUS_IGNORE,
-	)
-
-	fmt.Printf("2 --- im %d of %d: %d\n", rank, size, elseSecretNum)
+	if rank == 1 {
+		for {
+			C.MPI_Recv(
+				unsafe.Pointer(arr), // получаем чужое секретное число
+				9999,
+				C.MPI_INT,
+				C.MPI_ANY_SOURCE,
+				C.MPI_ANY_TAG,
+				C.MPI_COMM_WORLD,
+				C.MPI_STATUS_IGNORE,
+			)
+			n++
+			fmt.Println("RECV", n)
+		}
+	}
 
 	C.MPI_Abort(C.MPI_COMM_WORLD, 0)
 }

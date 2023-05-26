@@ -1,16 +1,5 @@
 package utils
 
-import (
-	"encoding/csv"
-	"os"
-)
-
-func GetEdgesWriter(filename string) *csv.Writer {
-	file, _ := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0660)
-	writer := csv.NewWriter(file)
-	return writer
-}
-
 func StarForestToComponents(startsForest []uint32) [][]uint32 {
 	representorToNum := make(map[uint32]uint32)
 	n := uint32(0)
