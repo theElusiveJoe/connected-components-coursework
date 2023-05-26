@@ -37,12 +37,28 @@ def genGraph2(nodes_num, edges_num, levels):
     )
     print(filename)
 
+def edgesFromBigNodes():
+    with open('tests/nodes/1500k.csv') as f:
+        lines = f.readlines()
+    lines = list(map(lambda x: x[:34].strip(), lines))
+
+    df = pd.DataFrame({
+        "node1": lines, 
+        "node2": lines
+    })
+    filename = f'tests/biggraphs/synthBig1.csv'
+    df.to_csv(
+        filename, 
+        index=False, header=False
+    )
+
 if __name__ == '__main__':
     # for lvl in range(1, 30):
     #     for i in range(10, 200, 10):
     #         genGraph2(i, i, lvl)
 
-    for nodes in range(1000, 30000, 1000):
-        for edges in range(1000, 30000, 1000):
-            genGraph1(nodes, edges)
+    # for nodes in range(1000, 30000, 1000):
+    #     for edges in range(1000, 30000, 1000):
+    #         genGraph1(nodes, edges)
     
+    edgesFromBigNodes()
