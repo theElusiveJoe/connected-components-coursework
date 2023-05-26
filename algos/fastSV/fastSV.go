@@ -1,11 +1,13 @@
 package fastSV
 
 import (
-	"connectedComponents/utils"
+	"connectedComponents/utils/ioEdges"
+	"connectedComponents/graph"
 	"fmt"
 )
 
-func fastSVCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
+func fastSVCCSearch(
+	nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	// Step 0
 	// заполняем лес пнями
 	f := make([]uint32, nodesNum)
@@ -98,11 +100,11 @@ func fastSVCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 
 	return f_next
 }
 
-func FastSVCCSearch(filename string) []uint32 {
-	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
-	return fastSVCCSearch(nodesNum, edges1, edges2)
+func FastSVCCSearchFromFile(filename string) []uint32 {
+	g := ioEdges.GetGraph(filename)
+	return fastSVCCSearch(g.NodesNum, g.Edges1, g.Edges2)
 }
 
-func FastSVCCSearchAdapter(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
-	return fastSVCCSearch(nodesNum, edges1, edges2)
+func FastSVCCSearch(g *graph.Graph) []uint32 {
+	return fastSVCCSearch(g.NodesNum, g.Edges1, g.Edges2)
 }

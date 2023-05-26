@@ -10,3 +10,7 @@ type Graph struct {
 func (g *Graph) GetEdge(i uint32) (uint32, uint32) {
 	return g.Edges1[i], g.Edges2[i]
 }
+
+func (g *Graph) Len() uint32 {
+	return uint32(len(g.Edges1))
+}

@@ -1,6 +1,9 @@
-package fastSV
+package basic
 
-import "connectedComponents/utils"
+import (
+	"connectedComponents/graph"
+	"connectedComponents/utils/ioEdges"
+)
 
 // максимально базовый алгоритм
 func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
@@ -29,11 +32,11 @@ func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	return f
 }
 
-func BasicCCSearch(filename string) []uint32 {
-	nodesNum, _, _, edges1, edges2 := utils.GetEdges(filename)
-	return basicCCSearch(nodesNum, edges1, edges2)
+func BasicCCSearchFromFile(filename string) []uint32 {
+	g := ioEdges.GetGraph(filename)
+	return basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
 }
 
-func BasicCCSearchAdapter(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
-	return basicCCSearch(nodesNum, edges1, edges2)
+func BasicCCSearch(g *graph.Graph) []uint32 {
+	return basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
 }
