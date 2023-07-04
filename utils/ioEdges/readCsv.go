@@ -18,47 +18,34 @@ func getRecords(filename string) [][]string {
 	return records
 }
 
-func createIndexAndPairsLists(rows [][]string, needMapa bool) *graph.Graph {
-	var mapa map[string]uint32
-	if needMapa{
-		mapa = make(map[string]uint32)
-	} else {
-		mapa = map[string]uint32{}
-	}
-
+func createIndexAndPairsLists(rows [][]string) *graph.Graph {
+	mapa := make(map[string]uint32)
 	edges := [][]uint32{make([]uint32, 0), make([]uint32, 0)}
 	n := uint32(0)
 
 	for _, row := range rows {
 		for i := 0; i <= 1; i++ {
-			if _, err := mapa[row[i]]; !err {
-				if needMapa{
-					mapa[row[i]] = n
-				}
+			if _, ok := mapa[row[i]]; !ok {
 				n++
+				mapa[row[i]] = n
 			}
 			edges[i] = append(edges[i], mapa[row[i]])
 		}
 	}
 
-	fmt.Printf("-> {edges reader}: detected %d nodes and %d edges\n", n, len(edges[0]))
-	
+	fmt.Printf("-> {csv reader}: detected %d nodes and %d edges\n", n, len(edges[0]))
+
 	g := graph.Graph{
-		n,
-		edges[0],
-		edges[1],
-		mapa,
+		NodesNum: n,
+		Edges1:   edges[0],
+		Edges2:   edges[1],
+		Mapa:     map[string]uint32{}, //mapa,
 	}
 	return &g
 }
 
-func readCsvGraph(filename string, needMapa ...bool) *graph.Graph {
+func readCsvGraph(filename string) *graph.Graph {
 	rows := getRecords(filename)
-	
-	nm := false
-	if len(needMapa) > 0 && needMapa[0]{
-		nm = true
-	}
 
-	return createIndexAndPairsLists(rows, nm)
+	return createIndexAndPairsLists(rows)
 }

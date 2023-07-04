@@ -1,3 +1,4 @@
 main
 temp.csv
 tests/graphs*
+tests/biggraphs*

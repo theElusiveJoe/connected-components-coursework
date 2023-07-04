@@ -11,14 +11,16 @@ type Distributor struct {
 	multiEdges  map[multiEdge]struct{}
 	hashNum     uint32
 	nodesWeight []uint32
+	numSlaves   uint32
+	nodesNum    uint32
 }
 
-func (dist *Distributor) H(node uint32) uint32 {
-	return node % dist.hashNum
+func H(node uint32, hashNum uint32) uint32 {
+	return node % hashNum
 }
 
 func (dist *Distributor) addEdge(v1 uint32, v2 uint32) {
-	h1, h2 := dist.H(v1), dist.H(v2)
+	h1, h2 := H(v1, dist.hashNum), H(v2, dist.hashNum)
 	dist.nodesWeight[h1]++
 	dist.nodesWeight[h2]++
 	if h2 < h1 {
@@ -40,11 +42,11 @@ func (dist *Distributor) toGraph() *graph.Graph {
 		edges1[i], edges2[i] = multiEdge.v1, multiEdge.v2
 		i++
 	}
-	
+
 	return &graph.Graph{
 		NodesNum: dist.hashNum,
-		Edges1: edges1,
-		Edges2: edges2,
-		Mapa: map[string]uint32{},
+		Edges1:   edges1,
+		Edges2:   edges2,
+		Mapa:     map[string]uint32{},
 	}
 }

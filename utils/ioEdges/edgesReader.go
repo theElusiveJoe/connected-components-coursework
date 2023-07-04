@@ -2,15 +2,18 @@ package ioEdges
 
 import (
 	"connectedComponents/graph"
+	"fmt"
 	"log"
 )
 
-func GetGraph(filename string) *graph.Graph {
+func LoadGraph(filename string) *graph.Graph {
+	fmt.Printf("-> {edges reader}: opening \"%s\"\n", filename)
+
 	if filename[len(filename)-4:] == "json" {
 		return readJsonGraph(filename)
 	}
 
-	if filename[len(filename)-4:] == "csv" {
+	if filename[len(filename)-3:] == "csv" {
 		return readCsvGraph(filename)
 	}
 

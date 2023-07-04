@@ -1,4 +1,4 @@
-package fastSVmpi
+package fastSVMpi
 
 /*
 #include "help.c"
@@ -14,13 +14,11 @@ import (
 func intPtr(v *int) *C.int {
 	return (*C.int)(unsafe.Pointer(v))
 }
-
 func cGetArr(arr *C.uint, i int) uint32 {
 	return (uint32)(C.getArray(arr, (C.int)(i)))
 }
 
 // MPI stuff
-
 func mpiBarrier(communicator C.MPI_Comm) {
 	C.MPI_Barrier(communicator)
 }
@@ -39,8 +37,6 @@ func mpiBcastBoolViaSend(bol bool, tag C.int, a int, b int) {
 func mpiReportToMaster(tag C.int) {
 	mpiSendTag(tag, MASTER)
 }
-
-
 func mpiCheckIncoming(tag C.int) bool {
 	var flag C.int
 	C.MPI_Iprobe(C.MPI_ANY_SOURCE, tag, C.MPI_COMM_WORLD, &flag, C.MPI_STATUS_IGNORE)
@@ -72,7 +68,7 @@ func mpiSkipIncomingAndResponce(intag C.int, outtag C.int) {
 	)
 	mpiSendTag(outtag, int(status.MPI_SOURCE))
 }
-func mpiSendTag(tag C.int, recipient int){
+func mpiSendTag(tag C.int, recipient int) {
 	C.MPI_Send(
 		unsafe.Pointer(nil),
 		0,
@@ -151,7 +147,7 @@ func mpiSendUintArray(source []uint32, recipient int, tag C.int) {
 	)
 	C.freeArray(arr)
 }
-func mpiRecvUintArray(msgLen int, source int, tag C.int) (*C.uint, C.MPI_Status) {
+func mpiRecvUintArray(msgLen int, source int, tag C.int) ([]uint32, C.MPI_Status) {
 	arr := C.createArray((C.int)(msgLen))
 	var status C.MPI_Status
 	C.MPI_Recv(
@@ -163,5 +159,10 @@ func mpiRecvUintArray(msgLen int, source int, tag C.int) (*C.uint, C.MPI_Status)
 		C.MPI_COMM_WORLD,
 		&status,
 	)
-	return arr, status
+	x := make([]uint32, msgLen)
+	for i := 0; i < msgLen; i++{
+		x[i] = cGetArr(arr, i)
+	}
+	C.freeArray(arr)
+	return x, status
 }
