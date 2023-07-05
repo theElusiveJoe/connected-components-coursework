@@ -21,8 +21,10 @@ func FindDistribution(iterator *graph.GraphIterator, numSlaves uint32, hashNum u
 	}
 
 	hashToSlave := dist.makeMapHashToSlave(slavesHashes)
-
+	fmt.Printf("-> {dist}: hashToSlave %v\n", hashToSlave)
+	// это во время выполнения реальной задачи не нужно:
 	dist.analyseDistrib(iterator, hashToSlave)
+
 	return hashToSlave
 }
 
@@ -38,7 +40,7 @@ func (dist *Distributor) init(iterator *graph.GraphIterator, numSlaves uint32, h
 	fmt.Println()
 	fmt.Printf("-> {dist}: gonna distribute %d nodes around %d slaves\n", iterator.NodesNum(), numSlaves)
 	fmt.Printf("-> {dist}: create %d hashes, each holds for %f nodes\n", hashNum, float32(iterator.NodesNum())/float32(hashNum))
-	fmt.Printf("-> {dist}: %d hashes per slave\n", uint32(float32(dist.hashNum)/float32(dist.numSlaves)))
+	fmt.Printf("-> {dist}: %d hashes per slave\n", uint32(float32(dist.hashNum+1)/float32(dist.numSlaves)))
 	// задаем мультиграф
 	for iterator.HasEdges() {
 		dist.addEdge(iterator.GetNextEdge())
@@ -52,7 +54,7 @@ func (dist *Distributor) findMulticomponents() [][]uint32 {
 	multiComponents := utils.StarForestToComponents(starForest)
 	// fmt.Println(multiComponents)
 	fmt.Printf("-> {dist}: detected %v multinodes and %v multiedges\n", float32(dist.hashNum), float32(len(dist.multiEdges)))
-	fmt.Printf("-> {dist}: found %v multicomponents\n", float32(len(multiComponents)))
+	fmt.Printf("-> {dist}: found %v multicomponents\n", len(multiComponents))
 
 	// находим веса связных компонент
 	componentsWeight := make([]uint32, len(multiComponents))
@@ -69,11 +71,11 @@ func (dist *Distributor) findMulticomponents() [][]uint32 {
 		}
 		return false
 	})
-	fmt.Print("-> {dist}: 20 heaviest components: ")
-	for i := 0; i < int(math.Min(float64(20), float64(len(multiComponents)))); i++ {
-		fmt.Print(len(multiComponents[i]), ' ')
-	}
-	fmt.Println()
+	// fmt.Print("-> {dist}: 10 heaviest components: ")
+	// for i := 0; i < int(math.Min(float64(10), float64(len(multiComponents)))); i++ {
+	// fmt.Print(len(multiComponents[i]), ' ')
+	// }
+	// fmt.Println()
 
 	return multiComponents
 }
@@ -104,8 +106,9 @@ func (dist *Distributor) balanceHashes(multiComponents [][]uint32) [][]uint32 {
 	for _, mc := range multiComponents {
 		// fmt.Println("mc", mcNum, "has", len(mc), "hashes")
 		for len(mc) > 0 {
-
-			min := int(math.Min(float64(hashPerSlave), float64(len(mc))))
+			min := int(math.Min(
+				float64(hashPerSlave)*1.2-float64(len(slavesHashes[i])),
+				float64(len(mc))))
 			slavesHashes[i] = append(slavesHashes[i], mc[:min]...)
 			mc = mc[min:]
 			nextI()
@@ -143,9 +146,12 @@ func (dist *Distributor) analyseDistrib(iterator *graph.GraphIterator, hashToSla
 		}
 	}
 
+	fmt.Println("-> {dist}: матрица A \"смежности\" хешей:")
+	fmt.Println("-> {dist}: A[i,j] = n - значит, что существует n ребер (v1,v2): h(v1) = i & h(v2) = j")
 	for _, row := range connectivityMatrix {
+		fmt.Print("    ")
 		for _, elem := range row {
-			fmt.Print(elem, " ")
+			fmt.Printf("%05d ", elem)
 		}
 		fmt.Println()
 	}

@@ -6,7 +6,6 @@ package fastSVMpi
 */
 import "C"
 
-
 // true, если нужно прогрнать еще один круг, иначе false
 func runStep5SlavePolling(tr *transRole) bool {
 	switch tr.role {
@@ -21,14 +20,14 @@ func runStep5SlavePolling(tr *transRole) bool {
 }
 
 func runStep5Master(tr *transRole) bool {
-	i:= 0
+	i := 0
 	changed := false
-	for i < tr.slavesNum{
+	for i < tr.slavesNum {
 		ch, _ := mpiRecvBool(TAG_SP1)
 		changed = changed || ch
 		i++
 	}
-	mpiBcastBoolViaSend(changed, TAG_SP2, 1, tr.worldSize-1)
+	mpiBcastBoolViaSend(changed, TAG_SP2, 1, tr.worldSize)
 	return changed
 }
 

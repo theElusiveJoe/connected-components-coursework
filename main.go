@@ -1,12 +1,5 @@
 package main
 
-// "connectedComponents/fastSV"
-// "connectedComponents/fastSVmpi"
-// "connectedComponents/utils"
-
-// "flag"
-// "fmt"
-
 /*
 #cgo linux LDFLAGS: -pthread -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi
 #include "mpi.h"
@@ -14,45 +7,30 @@ package main
 #include <stdint.h>
 */
 import "C"
+
 import (
-	"connectedComponents/distribution"
-	"connectedComponents/fastSV"
-	"connectedComponents/fastSVmpi"
-	"connectedComponents/utils"
+	"connectedComponents/algos/fastSVMpi"
 	"flag"
 	"fmt"
 )
 
 func main() {
-	var mpirun string
-	flag.StringVar(&mpirun, "mpirun", "", "graph table, that we want to process with mpi")
+	var mode string
+	var file string
+	var routersNum int
+	flag.StringVar(&mode, "mode", "normal", "one of: 'normal', 'mpi'")
+	flag.StringVar(&file, "f", "", "graph table or json, that we want to process with mpi")
+	flag.IntVar(&routersNum, "r", 3, "routers number")
 	flag.Parse()
-	if mpirun != "" {
-		fmt.Println(mpirun)
-		fastSVmpi.BasicMpiCCSearch(mpirun)
+
+	if mode == "mpi" {
+		fmt.Println(file)
+		fastSVMpi.Run(file, routersNum)
 		return
+	} else if mode == "normal" {
+
+	} else {
+		panic("UNKNOWN mode: " + mode)
 	}
 
-	// testfile := "tests/graphs/graph10.csv"
-	// res:= fastSVmpi.BasicMpiCCSearch(testfile)
-	// fmt.Pr
-
-	// utils.CompareManyTests(
-	// 	fastSVmpi.AdapterForMpiBasicCCSearch,
-	// 	fastSV.BasicCCSearch,
-	// 	"tests/graphs/",
-	// )
-
-	// utils.CompareOneTest(
-	// 	fastSVmpi.AdapterForMpiBasicCCSearch,
-	// 	fastSV.BasicCCSearch,
-	// 	"tests/graphs/graph1.csv",
-	// )
-	test := "tests/graphs2/synthGraph-14l-190e.csv"
-	var dist distribution.Distributor
-	dist.FindDistributionFromFile(test, 10, 2294)
-
-	forest := fastSV.BasicCCSearch(test)
-	components := utils.StarForestToComponents(forest)
-	fmt.Println(len(components), "COMPONENTS")
 }

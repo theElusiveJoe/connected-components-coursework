@@ -24,7 +24,7 @@ func runStep4Master(tr *transRole) {
 		mpiCheckIncoming(TAG_SC_ALL_CONFIRMATIONS_RECIEVED)
 		recvd++
 	}
-	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, tr.worldSize-1)
+	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, tr.worldSize)
 }
 
 func runStep4Router(tr *transRole) {

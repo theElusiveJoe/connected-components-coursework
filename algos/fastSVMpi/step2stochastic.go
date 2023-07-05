@@ -24,7 +24,7 @@ func runStep2Master(tr *transRole) {
 		mpiCheckIncoming(TAG_SH_ALL_CONFIRMATIONS_RECIEVED)
 		recvd++
 	}
-	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, tr.worldSize-1)
+	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, tr.worldSize)
 }
 
 func runStep2Router(tr *transRole) {
@@ -167,5 +167,6 @@ func runStep2Slave(tr *transRole) {
 		checkIncoming(tr, &confirmations)
 	}
 	mpiSendTag(TAG_SH_ALL_CONFIRMATIONS_RECIEVED, MASTER)
-	for checkIncoming(tr, &confirmations) {}
+	for checkIncoming(tr, &confirmations) {
+	}
 }

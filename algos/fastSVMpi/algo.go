@@ -6,7 +6,7 @@ package fastSVMpi
 */
 import "C"
 import (
-	_ "fmt"
+	"fmt"
 )
 
 const (
@@ -68,6 +68,53 @@ type transRole struct {
 	SLAVES_COMM C.MPI_Comm
 }
 
+func (tr *transRole) String() string {
+	var rs string
+	if tr.role == 0 {
+		rs = "MASTER"
+	} else if tr.role == 1 {
+		rs = "ROUTER"
+	} else {
+		rs = "SLAVE"
+	}
+
+	s := ""
+	s += "tr {\n"
+	s += fmt.Sprintf("    rank: %d\n", tr.rank)
+	s += fmt.Sprintf("    role: %s\n", rs)
+	// s += fmt.Sprintf("    hashnum: %d\n", tr.hashNum)
+	// s += fmt.Sprintf("    slaves: %d\n", tr.slavesNum)
+	// s += fmt.Sprintf("    routers: %d\n", tr.routersNum)
+
+	if tr.role == 0 {
+
+	} else if tr.role == 1 {
+		s += "    me: " + tr.router.String() + "\n"
+	} else {
+		s += "    me: " + tr.slave.String() + "\n"
+	}
+
+	s += "}"
+	return s
+}
+
+func (tr *transRole) talk(format string, args ...any) {
+	var label string
+	if tr.role == 0 {
+		label = "MASTER"
+	} else if tr.role == 1 {
+		label = fmt.Sprintf("SLAVE %d", tr.rank)
+	} else {
+		label = fmt.Sprintf("SLAVE %d", tr.rank)
+	}
+
+	fmt.Print(
+		fmt.Sprintf("-> {%s}: ", label),
+		fmt.Sprintf(format, args...),
+		"\n",
+	)
+}
+
 func (tr *transRole) findRouter(v uint32) int {
 	h := int(v % tr.hashNum)
 	routerNum := h%tr.routersNum + 1
@@ -76,7 +123,11 @@ func (tr *transRole) findRouter(v uint32) int {
 
 func Run(filename string, routersNum int) {
 	tr := runStep0(filename, routersNum)
+
 	runStep1Distrib(tr)
+	fmt.Println(tr)
+	C.MPI_Finalize()
+	return
 
 	for {
 		runStep2Stochastic(tr)

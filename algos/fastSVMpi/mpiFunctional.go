@@ -34,16 +34,13 @@ func mpiBcastBoolViaSend(bol bool, tag C.int, a int, b int) {
 		mpiSendBool(bol, i, tag)
 	}
 }
-func mpiReportToMaster(tag C.int) {
-	mpiSendTag(tag, MASTER)
-}
+
+// PROSTO
 func mpiCheckIncoming(tag C.int) bool {
 	var flag C.int
 	C.MPI_Iprobe(C.MPI_ANY_SOURCE, tag, C.MPI_COMM_WORLD, &flag, C.MPI_STATUS_IGNORE)
 	return flag == 1
 }
-
-// TAG
 func mpiSkipIncoming(tag C.int) {
 	C.MPI_Recv(
 		unsafe.Pointer(nil),
@@ -55,6 +52,8 @@ func mpiSkipIncoming(tag C.int) {
 		C.MPI_STATUS_IGNORE,
 	)
 }
+
+// TAG
 func mpiSkipIncomingAndResponce(intag C.int, outtag C.int) {
 	var status C.MPI_Status
 	C.MPI_Recv(
@@ -160,7 +159,7 @@ func mpiRecvUintArray(msgLen int, source int, tag C.int) ([]uint32, C.MPI_Status
 		&status,
 	)
 	x := make([]uint32, msgLen)
-	for i := 0; i < msgLen; i++{
+	for i := 0; i < msgLen; i++ {
 		x[i] = cGetArr(arr, i)
 	}
 	C.freeArray(arr)

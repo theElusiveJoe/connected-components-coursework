@@ -8,7 +8,7 @@ import "C"
 
 // На этой стадии настраивается только MPI и т.н. "глобальный контекст"
 func runStep0(filename string, routersNum int) *transRole {
-	
+
 	C.MPI_Init(nil, nil)
 	var rank, worldSize int
 	C.MPI_Comm_rank(C.MPI_COMM_WORLD, intPtr(&rank))
@@ -54,7 +54,8 @@ func runStep0(filename string, routersNum int) *transRole {
 		role:       role,
 		routersNum: routersNum,
 		slavesNum:  worldSize - (routersNum + 1),
-		hashNum:    uint32(worldSize - (routersNum + 1)),
+		// TODO: сюда надо что-то передовать адекватное
+		hashNum: 40,
 
 		SLAVES_COMM: SLAVES_COMM,
 	}

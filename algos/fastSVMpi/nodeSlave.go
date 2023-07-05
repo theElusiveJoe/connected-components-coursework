@@ -66,6 +66,8 @@ func (slave *slaveNode) isServerOf(v uint32) bool {
 	return ok
 }
 
-// func (slave *slaveNode) findRouter(v uint32, tr *transRole) uint32 {
-// 	return
-// }
+func (slave *slaveNode) String() string {
+	return fmt.Sprintf("{\n        edges:\n            %v\n            %v\n"+
+		"        parents:\n            %v\n        changed: %v\n    }\n",
+		slave.edges1, slave.edges2, slave.f, slave.changed)
+}
