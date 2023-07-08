@@ -38,6 +38,7 @@ func runStep5Router(tr *transRole) bool {
 
 func runStep5Slave(tr *transRole) bool {
 	mpiSendBool(tr.slave.changed, MASTER, TAG_SP1)
+	tr.slave.setChangedFalse()
 	cont, _ := mpiRecvBool(TAG_SP2)
 	return cont
 }

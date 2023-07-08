@@ -35,17 +35,43 @@ func (slave *slaveNode) print() {
 	)
 }
 
-func (slave *slaveNode) addEdge(v1 uint32, v2 uint32) {
+func (slave *slaveNode) addEdge(v1 uint32, v2 uint32, isInner bool) {
 	slave.edgesNum++
 	slave.edges1 = append(slave.edges1, v1)
 	slave.edges2 = append(slave.edges2, v2)
+
+	var min uint32
+	if v2 < v1 {
+		min = v2
+	} else {
+		min = v1
+	}
+
+	if _, ok := slave.f[v1]; ok {
+		slave.setParentIfLess(v1, min)
+	} else {
+		slave.f[v1] = min
+	}
+
+	if isInner {
+		if _, ok := slave.f[v2]; ok {
+			slave.setParentIfLess(v2, min)
+		} else {
+			slave.f[v2] = min
+		}
+	}
 }
+
 func (slave *slaveNode) getEdge(i int) (uint32, uint32) {
 	return slave.edges1[i], slave.edges2[i]
 }
 
 func (slave *slaveNode) getParent(v uint32) uint32 {
-	return slave.f[v]
+	if p, ok := slave.f[v]; !ok {
+		panic(fmt.Sprintf("i dont manage node %d\n", v))
+	} else {
+		return p
+	}
 }
 func (slave *slaveNode) setParentIfLess(v uint32, newParent uint32) {
 	if slave.f[v] > newParent {

@@ -15,19 +15,20 @@ import (
 )
 
 func main() {
-	var mode string
-	var file string
-	var routersNum int
-	flag.StringVar(&mode, "mode", "normal", "one of: 'normal', 'mpi'")
-	flag.StringVar(&file, "f", "", "graph table or json, that we want to process with mpi")
-	flag.IntVar(&routersNum, "r", 3, "routers number")
+	var mode, file string
+	var routersNum, hashNum int
+	flag.StringVar(&mode, "mode", "normal", "one of: 'normal', 'mpi-with-dist', 'mpi-no-dist'")
+	flag.StringVar(&file, "file", "", "graph table or json, that we want to process with mpi")
+	flag.IntVar(&routersNum, "routers", 3, "routers number")
+	flag.IntVar(&hashNum, "hash", 1000000000, "hash for pre distribution")
 	flag.Parse()
 
-	if mode == "mpi" {
+	if mode == "normal" {
+
+	} else if mode == "mpi-with-dist" {
 		fmt.Println(file)
-		fastSVMpi.Run(file, routersNum)
-		return
-	} else if mode == "normal" {
+		fastSVMpi.Run(file, routersNum, hashNum)
+	} else if mode == "mpi-with-dist" {
 
 	} else {
 		panic("UNKNOWN mode: " + mode)

@@ -7,7 +7,7 @@ package fastSVMpi
 import "C"
 
 // На этой стадии настраивается только MPI и т.н. "глобальный контекст"
-func runStep0(filename string, routersNum int) *transRole {
+func runStep0(filename string, routersNum int, hashnum uint32) *transRole {
 
 	C.MPI_Init(nil, nil)
 	var rank, worldSize int
@@ -54,8 +54,7 @@ func runStep0(filename string, routersNum int) *transRole {
 		role:       role,
 		routersNum: routersNum,
 		slavesNum:  worldSize - (routersNum + 1),
-		// TODO: сюда надо что-то передовать адекватное
-		hashNum: 40,
+		hashNum:    hashnum,
 
 		SLAVES_COMM: SLAVES_COMM,
 	}

@@ -13,8 +13,11 @@ const (
 	TAG_NEXT_PHASE C.int = iota
 
 	// STEP 1 DISTRIB
-	TAG_RESPONSIBLE_FOR_V1_CONNECTED_TO_V2
+	TAG_DISTRIBUTED_EDGE
+	TAG_INNER_EDGE
+	TAG_GOT_EDGE
 	TAG_HASH_TO_SLAVE_ROW
+	TAG_GOT_ROW
 
 	// STEP 2 STOCHASTIC HOOKING
 	TAG_SH1
@@ -99,11 +102,13 @@ func (tr *transRole) String() string {
 }
 
 func (tr *transRole) talk(format string, args ...any) {
+	return
+
 	var label string
 	if tr.role == 0 {
 		label = "MASTER"
 	} else if tr.role == 1 {
-		label = fmt.Sprintf("SLAVE %d", tr.rank)
+		label = fmt.Sprintf("ROUTER %d", tr.rank)
 	} else {
 		label = fmt.Sprintf("SLAVE %d", tr.rank)
 	}
@@ -117,19 +122,24 @@ func (tr *transRole) talk(format string, args ...any) {
 
 func (tr *transRole) findRouter(v uint32) int {
 	h := int(v % tr.hashNum)
-	routerNum := h%tr.routersNum + 1
-	return routerNum
+	return h%tr.routersNum + 1
 }
 
-func Run(filename string, routersNum int) {
-	tr := runStep0(filename, routersNum)
+func Run(filename string, routersNum int, hashNum int) {
+	tr := runStep0(filename, routersNum, uint32(hashNum))
 
 	runStep1Distrib(tr)
+
+	mpiBarrier(C.MPI_COMM_WORLD)
 	fmt.Println(tr)
-	C.MPI_Finalize()
-	return
+	mpiBarrier(C.MPI_COMM_WORLD)
+	iters := 0
 
 	for {
+		iters++
+		if tr.role == MASTER {
+			fmt.Println("-> iteration", iters)
+		}
 		runStep2Stochastic(tr)
 		runStep3Aggressive(tr)
 		runStep4ShortCutting(tr)
@@ -138,4 +148,16 @@ func Run(filename string, routersNum int) {
 		}
 	}
 
+	mpiBarrier(C.MPI_COMM_WORLD)
+
+	mpiBarrier(C.MPI_COMM_WORLD)
+	if tr.role == SLAVE {
+		fmt.Println(tr.slave.f)
+	}
+	mpiBarrier(C.MPI_COMM_WORLD)
+	if tr.role == MASTER {
+		fmt.Printf("\n----------- ENDED in %d iters -----------\n\n", iters)
+	}
+	C.MPI_Finalize()
+	return
 }

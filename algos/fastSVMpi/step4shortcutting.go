@@ -5,8 +5,14 @@ package fastSVMpi
 #cgo linux LDFLAGS: -pthread -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi
 */
 import "C"
+import "fmt"
 
 func runStep4ShortCutting(tr *transRole) {
+	if tr.role == MASTER {
+		fmt.Print("\n-----------STEP 4 STARTED-----------\n\n")
+	}
+	mpiBarrier(C.MPI_COMM_WORLD)
+
 	switch tr.role {
 	case MASTER:
 		runStep4Master(tr)
@@ -21,7 +27,7 @@ func runStep4Master(tr *transRole) {
 	expect := tr.slavesNum
 	recvd := 0
 	for recvd < expect {
-		mpiCheckIncoming(TAG_SC_ALL_CONFIRMATIONS_RECIEVED)
+		mpiSkipIncoming(TAG_SC_ALL_CONFIRMATIONS_RECIEVED)
 		recvd++
 	}
 	mpiBcastTagViaSend(TAG_NEXT_PHASE, 1, tr.worldSize)
@@ -34,7 +40,7 @@ func runStep4Router(tr *transRole) {
 			return
 		}
 
-		// N1 -> T1 RECV
+		// N1 -> T1 RECVA
 		for mpiCheckIncoming(TAG_SC1) {
 			arr, _ := mpiRecvUintArray(3, C.MPI_ANY_SOURCE, TAG_SC1)
 			N2 := tr.router.getSlaveRank(tr, arr[0])
@@ -78,9 +84,9 @@ func runStep4Slave(tr *transRole) {
 	// должны получить столько подтверждений, колько цепочек инициировали
 	confirmations := uint32(0)
 
+	N1 := uint32(tr.slave.rank)
 	for u, pu := range tr.slave.f {
 		checkIncoming(tr, &confirmations)
-		N1 := uint32(tr.slave.rank)
 		T1 := tr.findRouter(pu)
 		mpiSendUintArray([]uint32{pu, u, N1}, T1, TAG_SC1)
 	}
