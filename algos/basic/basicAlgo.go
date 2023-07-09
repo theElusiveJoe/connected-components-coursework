@@ -1,12 +1,12 @@
 package basic
 
 import (
-	"connectedComponents/graph"
+	"connectedComponents/algos"
 	"connectedComponents/utils/ioEdges"
 )
 
 // максимально базовый алгоритм
-func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
+func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) map[uint32]uint32 {
 	f := make([]uint32, nodesNum)
 	for i := 0; i < len(f); i++ {
 		f[i] = uint32(i)
@@ -28,15 +28,18 @@ func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 			}
 		}
 	}
-
-	return f
+	res := make(map[uint32]uint32)
+	for i, x := range f {
+		res[uint32(i)] = x
+	}
+	return res
 }
 
-func BasicCCSearchFromFile(filename string) []uint32 {
-	g := ioEdges.GetGraph(filename)
+func basicCCSearchFromFile(filename string) map[uint32]uint32 {
+	g := ioEdges.LoadGraph(filename)
 	return basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
 }
 
-func BasicCCSearch(g *graph.Graph) []uint32 {
-	return basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
+func Adapter(conf algos.RunConfig) map[uint32]uint32 {
+	return basicCCSearchFromFile(conf.TestFile)
 }
