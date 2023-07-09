@@ -11,6 +11,9 @@ import (
 
 func FindDistribution(iterator *graph.GraphIterator, numSlaves uint32, hashNum uint32) []uint32 {
 	var dist Distributor
+	if iterator.G.NodesNum < hashNum {
+		hashNum = iterator.G.NodesNum + 1
+	}
 	dist.init(iterator, numSlaves, hashNum)
 
 	multiComponents := dist.findMulticomponents()

@@ -9,29 +9,41 @@ package main
 import "C"
 
 import (
+	"connectedComponents/algos"
 	"connectedComponents/algos/fastSVMpi"
 	"flag"
 	"fmt"
 )
 
 func main() {
-	var mode, file string
-	var routersNum, hashNum int
-	flag.StringVar(&mode, "mode", "normal", "one of: 'normal', 'mpi-with-dist', 'mpi-no-dist'")
-	flag.StringVar(&file, "file", "", "graph table or json, that we want to process with mpi")
-	flag.IntVar(&routersNum, "routers", 3, "routers number")
-	flag.IntVar(&hashNum, "hash", 1000000000, "hash for pre distribution")
+	var strconf string
+	var mode int
+	flag.IntVar(&mode, "mode", -1, "-1 if not algo run else 0+")
+	flag.StringVar(&strconf, "conf", "", "json dumps of RunConfig")
 	flag.Parse()
 
-	if mode == "normal" {
-
-	} else if mode == "mpi-with-dist" {
-		fmt.Println(file)
-		fastSVMpi.Run(file, routersNum, hashNum)
-	} else if mode == "mpi-with-dist" {
-
+	if mode == -1 {
+		conf := algos.RunConfig{
+			TestFile:   "tests/graphs2/synthGraph-1l-90e.csv",
+			ResultDir:  "outputs/",
+			RoutersNum: 3,
+			Slavesnum:  5,
+			HashNum:    1000000,
+			Id:         "",
+		}
+		res := fastSVMpi.Adapter(conf)
+		fmt.Println(res)
 	} else {
-		panic("UNKNOWN mode: " + mode)
+		conf := algos.StrToConfig(strconf[1 : len(strconf)-1])
+		fmt.Println(conf)
+
+		if mode == algos.MODE_MPI_FASTSV_WITH_DIST {
+			fastSVMpi.Run(conf)
+		} else if mode == algos.MODE_MPI_FASTSV_NO_DIST {
+
+		} else {
+			panic("UNKNOWN mode: " + fmt.Sprintf("%d", mode))
+		}
 	}
 
 }

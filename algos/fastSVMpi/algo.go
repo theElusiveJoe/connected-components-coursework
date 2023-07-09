@@ -6,6 +6,7 @@ package fastSVMpi
 */
 import "C"
 import (
+	"connectedComponents/algos"
 	"fmt"
 )
 
@@ -125,8 +126,8 @@ func (tr *transRole) findRouter(v uint32) int {
 	return h%tr.routersNum + 1
 }
 
-func Run(filename string, routersNum int, hashNum int) {
-	tr := runStep0(filename, routersNum, uint32(hashNum))
+func Run(conf *algos.RunConfig) {
+	tr := runStep0(conf.TestFile, conf.RoutersNum, uint32(conf.HashNum))
 
 	runStep1Distrib(tr)
 
@@ -147,6 +148,7 @@ func Run(filename string, routersNum int, hashNum int) {
 			break
 		}
 	}
+	runStep6SaveResult(tr, conf)
 
 	mpiBarrier(C.MPI_COMM_WORLD)
 
@@ -159,5 +161,4 @@ func Run(filename string, routersNum int, hashNum int) {
 		fmt.Printf("\n----------- ENDED in %d iters -----------\n\n", iters)
 	}
 	C.MPI_Finalize()
-	return
 }
