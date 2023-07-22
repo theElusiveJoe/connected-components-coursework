@@ -46,6 +46,6 @@ func BasicCCSearchFromFile(filename string) map[uint32]uint32 {
 	return res
 }
 
-func Adapter(conf algos.RunConfig) map[uint32]uint32 {
+func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
 	return BasicCCSearchFromFile(conf.TestFile)
 }
