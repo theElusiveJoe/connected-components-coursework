@@ -3,7 +3,6 @@ package ioEdges
 import (
 	"connectedComponents/graph"
 	"encoding/csv"
-	"fmt"
 	"log"
 	"os"
 )
@@ -33,7 +32,7 @@ func createIndexAndPairsLists(rows [][]string) *graph.Graph {
 		}
 	}
 
-	fmt.Printf("-> {csv reader}: detected %d nodes and %d edges\n", n, len(edges[0]))
+	// fmt.Printf("-> {csv reader}: detected %d nodes and %d edges\n", n, len(edges[0]))
 
 	g := graph.Graph{
 		NodesNum: n,

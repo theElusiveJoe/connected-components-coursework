@@ -1,8 +1,8 @@
 package testing
 
 import (
+	"connectedComponents/algos"
 	"fmt"
-	"os"
 	"reflect"
 	"runtime"
 )
@@ -12,32 +12,32 @@ func getFunctionName(i interface{}) string {
 }
 
 func CompareOneTest(
-	foo1 func(string) []uint32,
-	foo2 func(string) []uint32,
-	filename string,
+	foo1 func(*algos.RunConfig) map[uint32]uint32,
+	foo2 func(*algos.RunConfig) map[uint32]uint32,
+	conf *algos.RunConfig,
 ) bool {
-	res1 := foo1(filename)
-	res2 := foo2(filename)
-
-	fmt.Println(getFunctionName(foo1), res1)
-	fmt.Println(getFunctionName(foo2), res2)
+	res1 := foo1(conf)
+	res2 := foo2(conf)
+	// fmt.Println(getFunctionName(foo1), res1)
+	// fmt.Println(getFunctionName(foo2), res2)
 	return reflect.DeepEqual(res1, res2)
 }
 
 func CompareManyTests(
-	foo1 func(string) []uint32,
-	foo2 func(string) []uint32,
-	dir string,
+	foo1 func(*algos.RunConfig) map[uint32]uint32,
+	foo2 func(*algos.RunConfig) map[uint32]uint32,
+	conf *algos.RunConfig,
+	test_files []string,
 ) (bool, map[string]bool) {
-	tests, _ := os.ReadDir(dir)
 	resMap := make(map[string]bool, 0)
 	resTotal := true
-	for i, fn := range tests {
-		fmt.Printf("----- %d / %d -----", i, len(tests))
-		filename := fn.Name()
-		fmt.Println(dir + filename)
-		res := CompareOneTest(foo1, foo2, dir+filename)
-		resMap[filename] = res
+
+	for i, fn := range test_files {
+		fmt.Printf("----- %d / %d -----", i, len(test_files))
+		fmt.Println(fn)
+		conf.TestFile = fn
+		res := CompareOneTest(foo1, foo2, conf)
+		resMap[fn] = res
 		if res {
 			fmt.Println("PASSED")
 		} else {

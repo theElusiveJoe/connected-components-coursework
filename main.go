@@ -10,7 +10,10 @@ import "C"
 
 import (
 	"connectedComponents/algos"
+	"connectedComponents/algos/basic"
 	"connectedComponents/algos/fastSVMpi"
+	"connectedComponents/utils/testing"
+
 	"flag"
 	"fmt"
 )
@@ -23,27 +26,21 @@ func main() {
 	flag.Parse()
 
 	if mode == -1 {
-		conf := algos.RunConfig{
-			TestFile:   "tests/graphs2/synthGraph-1l-90e.csv",
-			ResultDir:  "outputs/",
-			RoutersNum: 3,
-			Slavesnum:  5,
-			HashNum:    1000000,
-			Id:         "",
-		}
-		res := fastSVMpi.Adapter(conf)
-		fmt.Println(res)
-	} else {
+		testing.RunTestsInFolder("tests/mygraphs", fastSVMpi.Adapter, basic.Adapter)
+	} else if mode > 0 {
 		conf := algos.StrToConfig(strconf[1 : len(strconf)-1])
 		fmt.Println(conf)
 
 		if mode == algos.MODE_MPI_FASTSV_WITH_DIST {
 			fastSVMpi.Run(conf)
-		} else if mode == algos.MODE_MPI_FASTSV_NO_DIST {
+		} else if mode == algos.MODE_NOMPI_BASIC {
 
 		} else {
 			panic("UNKNOWN mode: " + fmt.Sprintf("%d", mode))
 		}
+	} else {
+		panic("UNKNOWN mode: " + fmt.Sprintf("%d", mode))
+
 	}
 
 }

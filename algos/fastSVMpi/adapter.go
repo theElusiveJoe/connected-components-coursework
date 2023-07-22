@@ -11,10 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func Adapter(conf algos.RunConfig) map[uint32]uint32 {
-	conf = *conf.GetCopy()
+func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
+	conf = conf.GetCopy()
 	conf.Id = uuid.New().String()[:8]
-	fmt.Println("ID", conf.Id)
 
 	cmd := exec.Command(
 		"mpiexec", []string{
@@ -27,7 +26,7 @@ func Adapter(conf algos.RunConfig) map[uint32]uint32 {
 		}...,
 	)
 
-	fmt.Println("->", cmd)
+	// fmt.Println("->", cmd)
 	if resb, err := cmd.CombinedOutput(); err != nil {
 		fmt.Println("ошибка в алгоритме MPI FASTSV WITH DIST")
 		fmt.Println(string(resb))
@@ -43,10 +42,10 @@ func Adapter(conf algos.RunConfig) map[uint32]uint32 {
 		defer file.Close()
 		decoder := gob.NewDecoder(file)
 		decoder.Decode(&r)
-		fmt.Println("-> r:", r)
 		for k, v := range r {
 			res[k] = v
 		}
+		os.Remove(fn)
 	}
 	return res
 
