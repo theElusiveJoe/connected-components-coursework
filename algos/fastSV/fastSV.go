@@ -1,8 +1,9 @@
 package fastSV
 
 import (
-	"connectedComponents/utils/ioEdges"
+	"connectedComponents/algos"
 	"connectedComponents/graph"
+	"connectedComponents/utils/ioEdges"
 	"fmt"
 )
 
@@ -100,11 +101,20 @@ func fastSVCCSearch(
 	return f_next
 }
 
-func FastSVCCSearchFromFile(filename string) []uint32 {
-	g := ioEdges.GetGraph(filename)
-	return fastSVCCSearch(g.NodesNum, g.Edges1, g.Edges2)
+func FastSVCCSearch(g *graph.Graph) map[uint32]uint32 {
+	f := fastSVCCSearch(g.NodesNum, g.Edges1, g.Edges2)
+	res := make(map[uint32]uint32)
+	for i, x := range f {
+		res[uint32(i)] = x
+	}
+	return res
 }
 
-func FastSVCCSearch(g *graph.Graph) []uint32 {
-	return fastSVCCSearch(g.NodesNum, g.Edges1, g.Edges2)
+func FastSVCCSearchFromFile(filename string) map[uint32]uint32 {
+	g := ioEdges.LoadGraph(filename)
+	return FastSVCCSearch(g)
+}
+
+func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
+	return FastSVCCSearchFromFile(conf.TestFile)
 }
