@@ -11,6 +11,7 @@ import "C"
 import (
 	"connectedComponents/algos"
 	"connectedComponents/algos/basic"
+	"connectedComponents/algos/basicMpi"
 	"connectedComponents/algos/fastSVMpi"
 	"connectedComponents/utils/testing"
 
@@ -18,29 +19,28 @@ import (
 	"fmt"
 )
 
+const MODE_TESTS = "compare"
+
 func main() {
 	var strconf string
-	var mode int
-	flag.IntVar(&mode, "mode", -1, "-1 if not algo run else 0+")
+	var mode string
+	flag.StringVar(&mode, "mode", "", "launch mode")
 	flag.StringVar(&strconf, "conf", "", "json dumps of RunConfig")
 	flag.Parse()
 
-	if mode == -1 {
-		testing.RunTestsInFolder("tests/mygraphs", fastSVMpi.Adapter, basic.Adapter)
-	} else if mode > 0 {
+	if mode == MODE_TESTS {
+		testing.RunTestsInFolder("tests/mygraphs", basicMpi.Adapter, basic.Adapter)
+	} else {
+		fmt.Println("CONFIG:", strconf)
 		conf := algos.StrToConfig(strconf[1 : len(strconf)-1])
 		fmt.Println(conf)
 
 		if mode == algos.MODE_MPI_FASTSV_WITH_DIST {
 			fastSVMpi.Run(conf)
-		} else if mode == algos.MODE_NOMPI_BASIC {
-
+		} else if mode == algos.MODE_MPI_BASIC {
+			basicMpi.Run(conf)
 		} else {
-			panic("UNKNOWN mode: " + fmt.Sprintf("%d", mode))
+			panic("UNKNOWN mode: " + mode)
 		}
-	} else {
-		panic("UNKNOWN mode: " + fmt.Sprintf("%d", mode))
-
 	}
-
 }
