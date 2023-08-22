@@ -102,23 +102,21 @@ func (tr *transRole) String() string {
 	return s
 }
 
-func (tr *transRole) talk(format string, args ...any) {
-	return
+func (tr *transRole) talk(format string, args ...any) {	
+	// var label string
+	// if tr.role == 0 {
+	// 	label = "MASTER"
+	// } else if tr.role == 1 {
+	// 	label = fmt.Sprintf("ROUTER %d", tr.rank)
+	// } else {
+	// 	label = fmt.Sprintf("SLAVE %d", tr.rank)
+	// }
 
-	var label string
-	if tr.role == 0 {
-		label = "MASTER"
-	} else if tr.role == 1 {
-		label = fmt.Sprintf("ROUTER %d", tr.rank)
-	} else {
-		label = fmt.Sprintf("SLAVE %d", tr.rank)
-	}
-
-	fmt.Print(
-		fmt.Sprintf("-> {%s}: ", label),
-		fmt.Sprintf(format, args...),
-		"\n",
-	)
+	// fmt.Print(
+	// 	fmt.Sprintf("-> {%s}: ", label),
+	// 	fmt.Sprintf(format, args...),
+	// 	"\n",
+	// )
 }
 
 func (tr *transRole) findRouter(v uint32) int {

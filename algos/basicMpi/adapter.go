@@ -1,4 +1,4 @@
-package fastSVMpi
+package basicMpi
 
 import (
 	"connectedComponents/algos"
@@ -17,18 +17,18 @@ func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
 
 	cmd := exec.Command(
 		"mpiexec", []string{
-			"-n", fmt.Sprintf("%d", conf.RoutersNum+conf.Slavesnum+1),
+			"-n", fmt.Sprintf("%d", conf.Slavesnum+1),
 			"-oversubscribe",
 
 			"main",
-			"-mode=" + algos.MODE_MPI_FASTSV_WITH_DIST,
+			"-mode=" + algos.MODE_MPI_BASIC,
 			"-conf=" + "'" + conf.ConfigToStr() + "'",
 		}...,
 	)
 
 	// fmt.Println("->", cmd)
 	if resb, err := cmd.CombinedOutput(); err != nil {
-		fmt.Println("ошибка в алгоритме MPI FASTSV WITH DIST")
+		fmt.Println("ошибка в алгоритме MPI BASIC")
 		fmt.Println(string(resb))
 		panic(err)
 	}

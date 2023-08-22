@@ -20,6 +20,7 @@ func CompareOneTest(
 	res2 := foo2(conf)
 	// fmt.Println(getFunctionName(foo1), res1)
 	// fmt.Println(getFunctionName(foo2), res2)
+	fmt.Println(res1)
 	return reflect.DeepEqual(res1, res2)
 }
 

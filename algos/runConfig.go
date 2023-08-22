@@ -3,11 +3,11 @@ package algos
 import "encoding/json"
 
 const (
-	MODE_MPI_BASIC int = iota
-	MODE_MPI_FASTSV_WITH_DIST
-	MODE_MPI_FASTSV_NO_DIST
-	MODE_NOMPI_BASIC
-	MODE_NOMPI_FASTSV
+	MODE_MPI_BASIC  = "algo-mpi-basic"
+	MODE_MPI_FASTSV_WITH_DIST = "algo-mpi-with-dist"
+	MODE_MPI_FASTSV_NO_DIST = "algo-mpi-no-dist"
+	MODE_NOMPI_BASIC = "algo-basic"
+	MODE_NOMPI_FASTSV = "algo"
 )
 
 type RunConfig struct {

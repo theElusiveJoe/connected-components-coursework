@@ -53,7 +53,7 @@ func (dist *Distributor) init(iterator *graph.GraphIterator, numSlaves uint32, h
 func (dist *Distributor) findMulticomponents() [][]uint32 {
 	// находим связные компоненты мультиграфа
 	multiG := dist.toGraph()
-	starForest := basic.BasicCCSearch(multiG)
+	starForest := basic.BasicCCSearchRetArray(multiG)
 	multiComponents := utils.StarForestToComponents(starForest)
 	// fmt.Println(multiComponents)
 	fmt.Printf("-> {dist}: detected %v multinodes and %v multiedges\n", float32(dist.hashNum), float32(len(dist.multiEdges)))

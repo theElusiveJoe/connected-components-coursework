@@ -1,6 +1,5 @@
 package testing
 
-
 import (
 	"connectedComponents/algos"
 
@@ -8,7 +7,6 @@ import (
 	"os"
 	"path"
 )
-
 
 func RunTestsInFolder(
 	folder string,
@@ -25,7 +23,8 @@ func RunTestsInFolder(
 	hns := []uint32{1, 2, 3, 10, 20, 40, 100, 1000, 10000, 1000000}
 	rts := []int{1, 2, 3, 5, 10, 20}
 	sls := []int{1, 2, 3, 5, 10, 20}
-
+	total := len(hns) * len(rts) * len(sls)
+	completed := 0
 	for _, hashNum := range hns {
 		for _, routersNum := range rts {
 			for _, slavesNum := range sls {
@@ -43,6 +42,8 @@ func RunTestsInFolder(
 					fmt.Println(resmap)
 					panic("ТЕСТ НЕ ПРОШЕЛ!")
 				}
+				completed++
+				fmt.Printf("COMPLETED %d of %d test cycles\n\n\n", completed, total)
 			}
 		}
 	}

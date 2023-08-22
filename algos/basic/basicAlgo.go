@@ -32,18 +32,24 @@ func basicCCSearch(nodesNum uint32, edges1 []uint32, edges2 []uint32) []uint32 {
 	return f
 }
 
-func BasicCCSearch(g *graph.Graph) []uint32 {
-	return basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
-}
-
-func BasicCCSearchFromFile(filename string) map[uint32]uint32 {
-	g := ioEdges.LoadGraph(filename)
+func BasicCCSearch(g *graph.Graph) map[uint32]uint32  {
 	f := basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
 	res := make(map[uint32]uint32)
 	for i, x := range f {
 		res[uint32(i)] = x
 	}
 	return res
+}
+
+func BasicCCSearchRetArray(g *graph.Graph) []uint32  {
+	return basicCCSearch(g.NodesNum, g.Edges1, g.Edges2)
+}
+
+
+func BasicCCSearchFromFile(filename string) map[uint32]uint32 {
+	g := ioEdges.LoadGraph(filename)
+	return BasicCCSearch(g)
+	
 }
 
 func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
