@@ -21,7 +21,8 @@ func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
 			"-oversubscribe",
 
 			"main",
-			"-mode=" + algos.MODE_MPI_BASIC,
+			"-mode=" + algos.MODE_MPI_LAUNCH,
+			"-algo=" + algos.ALGO_MPI_BASIC,
 			"-conf=" + "'" + conf.ConfigToStr() + "'",
 		}...,
 	)

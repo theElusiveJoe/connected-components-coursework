@@ -21,12 +21,11 @@ func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
 			"-oversubscribe",
 
 			"main",
-			"-mode=" + algos.MODE_MPI_FASTSV_NO_DIST,
+			"-mode=" + algos.MODE_MPI_LAUNCH,
+			"-algo=" + algos.ALGO_MPI_FASTSV_NO_DIST,
 			"-conf=" + "'" + conf.ConfigToStr() + "'",
 		}...,
 	)
-	// cmd.Start()
-	// utils.MemStats()
 
 	fmt.Println("->", cmd)
 	if resb, err := cmd.CombinedOutput(); err != nil {
