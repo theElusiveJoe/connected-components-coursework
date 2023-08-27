@@ -54,7 +54,6 @@ def edgesFromBigNodes():
         index=False, header=False
     )
 
-
 def genBigGraph(p, q):
     # 2*10^9 узлов
     # 1.7*10^9 ребер
@@ -110,9 +109,7 @@ def genBigGraph2(p, q):
     print('-> generating', nodesNum, 'nodes and', edgesNum, 'edges')
     
     s = f'{0:0{l}b}'
-    tobinst = lambda x: s.format(x)
 
-    l1, l2 = [], []
     nodeMax = int(nodesNum*1.42)
     nodesSet = set()
     filename = f'tests/biggraphs/big-{p}e{q}.csv'
@@ -133,17 +130,4 @@ def genBigGraph2(p, q):
     print("-> generated", len(nodesSet), 'nodes and', edgesNum, 'edges')
 
 if __name__ == '__main__':
-    # for lvl in range(1, 30):
-    #     for i in range(10, 200, 10):
-    #         genGraph2(i, i, lvl)
-
-    # for nodes in range(1000, 30000, 1000):
-    #     for edges in range(1000, 30000, 1000):
-    #         genGraph1(nodes, edges)
-    
-    # genBigGraph(1,6)
-    # genBigGraph(2,6)
-    # genBigGraph(1,7)
-    genBigGraph2(1,8)
-    # genBigGraph()
-    # find_coef()
+    genBigGraph2(int(sys.argv[1]),int(sys.argv[2]))
