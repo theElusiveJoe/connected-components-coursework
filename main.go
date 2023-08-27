@@ -9,14 +9,14 @@ package main
 import "C"
 
 import (
-	"connectedComponents/algos"
-	"connectedComponents/algos/basic"
-	"connectedComponents/algos/basicMpi"
-	"connectedComponents/algos/fastSV"
-	"connectedComponents/algos/fastSVMpi"
-	"connectedComponents/algos/fastSVMpiNoDist"
+	"connectedComponents/src/algos"
+	"connectedComponents/src/algos/basic"
+	"connectedComponents/src/algos/basicMpi"
+	"connectedComponents/src/algos/fastSV"
+	"connectedComponents/src/algos/fastSVMpi"
+	"connectedComponents/src/algos/fastSVMpiNoDist"
 
-	"connectedComponents/utils/testing"
+	"connectedComponents/src/utils/testing"
 
 	"flag"
 	"fmt"
