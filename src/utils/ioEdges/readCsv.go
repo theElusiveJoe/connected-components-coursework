@@ -24,8 +24,8 @@ func createIndexAndPairsLists(rows [][]string) *graph.Graph {
 
 	for _, row := range rows {
 		for i := 0; i <= 1; i++ {
-			if _, ok := mapa[row[i]]; !ok {
-				mapa[row[i]] = n
+			if _, ok := mapa[row[i][i:]]; !ok {
+				mapa[row[i][i:]] = n
 				n++
 			}
 			edges[i] = append(edges[i], mapa[row[i]])
