@@ -98,7 +98,7 @@ func (tr *transRole) String() string {
 }
 
 func (tr *transRole) talk(format string, args ...any) {
-	// return
+	return
 	var label string
 	if tr.role == 0 {
 		label = "MASTER"
@@ -161,12 +161,6 @@ func Run(conf *algos.RunConfig) {
 	}
 	runStep6SaveResult(tr, conf)
 
-	mpiBarrier(C.MPI_COMM_WORLD)
-
-	mpiBarrier(C.MPI_COMM_WORLD)
-	if tr.role == SLAVE {
-		fmt.Println(tr.slave.f)
-	}
 	mpiBarrier(C.MPI_COMM_WORLD)
 	if tr.role == MASTER {
 		fmt.Printf("\n----------- ENDED in %d iters -----------\n\n", tr.curIter)

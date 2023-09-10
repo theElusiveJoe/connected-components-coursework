@@ -62,7 +62,7 @@ func runStep3Slave(tr *transRole) {
 			if mpiCheckIncoming(TAG_AH2) {
 				for mpiCheckIncoming(TAG_AH2) {
 					arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_AH2)
-					tr.log("recv_tag_2")
+					// tr.log("recv_tag_2")
 					u, pv := arr[0], arr[1]
 					ppv := tr.slave.getParent(pv)
 					// N3 -> N1: TAG3 SEND
@@ -75,7 +75,7 @@ func runStep3Slave(tr *transRole) {
 			if mpiCheckIncoming(TAG_AH1) {
 				for mpiCheckIncoming(TAG_AH1) {
 					arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_AH1)
-					tr.log("recv_tag_1")
+					// tr.log("recv_tag_1")
 
 					u, v := arr[0], arr[1]
 					pv := tr.slave.getParent(v)
@@ -92,7 +92,13 @@ func runStep3Slave(tr *transRole) {
 
 	for i := 0; i < tr.slave.edgesNum; i++ {
 		// чем отправлять свои сообщения, лучше ответим на чужие
-		checkIncoming()
+		if expectations-confirmations > 5000 {
+			for expectations-confirmations > 5000 {
+				checkIncoming()
+			}
+		} else {
+			checkIncoming()
+		}
 
 		// отправляем собственное сообщение
 		u, v := tr.slave.getEdge(i)

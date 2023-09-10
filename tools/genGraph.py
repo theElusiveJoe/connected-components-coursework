@@ -96,7 +96,7 @@ def genBigGraph(p, q):
         index=False, header=False
     )
 
-def genBigGraph2(p, q):
+def genBigGraph2(p, q, name):
     # 2*10^9 узлов
     # 1.7*10^9 ребер
     # E?N = 1.7/2 = 0.85
@@ -110,9 +110,9 @@ def genBigGraph2(p, q):
     
     s = f'{0:0{l}b}'
 
-    nodeMax = int(nodesNum*1.42)
+    nodeMax = int(nodesNum)*1.448
     nodesSet = set()
-    filename = f'tests/biggraphs/big-{p}e{q}.csv'
+    filename = f'tests/big/{name}.csv'
 
     with open(filename, 'w') as f:
         for i in tqdm.tqdm(range(edgesNum)):
@@ -126,8 +126,21 @@ def genBigGraph2(p, q):
             f.write(', ')
             f.write(s2)
             f.write('\n')
-    
-    print("-> generated", len(nodesSet), 'nodes and', edgesNum, 'edges')
+
+    with open(f'tests/big/table.tex', 'a') as f:
+        f.write(
+            f'{name} & ${nodesNum}$ & ${edgesNum}$ & ${len(nodesSet)}$ & \\\\\n \\hline \n'
+        )    
+    print("-> generated", len(nodesSet), 'nodes and', edgesNum, 'edges', len(nodesSet)/nodesNum)
 
 if __name__ == '__main__':
-    genBigGraph2(int(sys.argv[1]),int(sys.argv[2]))
+    gs = [
+        ('G0', 1, 5)
+        # ('G1', 5, 5),
+        # ('G2', 1, 6),
+        # ('G3', 15, 5),
+        # ('G4', 1, 7),
+        # ('G5', 15, 6),
+    ]
+    for name, p, q in gs:
+        genBigGraph2(p, q, name)

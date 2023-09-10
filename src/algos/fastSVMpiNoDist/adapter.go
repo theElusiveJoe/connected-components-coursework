@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 
 	"github.com/google/uuid"
 )
@@ -45,7 +46,6 @@ func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
 	memLogger.Stdout = os.Stdout
 	memLogger.Stderr = os.Stderr
 	memLogger.Start()
-	defer memLogger.Process.Kill()
 	fmt.Println("\n#### COMMAND ######\n", memLogger, "\n###################")
 
 	// ждем, пока mpi отработает и выводим, что он написал
@@ -55,7 +55,7 @@ func Adapter(conf *algos.RunConfig) map[uint32]uint32 {
 	}
 
 	// теперь можно прервать mem_logger
-	if err := memLogger.Process.Kill(); err != nil {
+	if err := memLogger.Process.Signal(syscall.SIGINT); err != nil {
 		panic(err)
 	} else {
 		fmt.Println("-> логгер памяти успешно прерван")

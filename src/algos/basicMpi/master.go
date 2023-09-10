@@ -44,8 +44,6 @@ func (master *masterNode) init(nodesNum uint32, edges1 []uint32, edges2 []uint32
 	iter.Init(&g)
 
 	fmt.Println("ДЛЯ поиска распределения используется граф:")
-	fmt.Println(g)
-	// master.distribution = distribution.FindDistribution(&iter, uint32(master.slavesNum), master.hashNum)
 
 	master.print()
 }
@@ -64,7 +62,6 @@ func (master *masterNode) print() {
 		"Im MASTER{\n",
 		" ", master.edges1, "\n",
 		" ", master.edges2, "\n",
-		// "  distrib:", master.distribution,
 		"\n}",
 	)
 }
@@ -95,7 +92,7 @@ func (master *masterNode) delegateAllEdges() {
 
 func (master *masterNode) manageExpectedPPNCounting() {
 	for i := 0; i < master.slavesNum; i++ {
-		fmt.Println("-> MASTER: slave counted PPN")
+		// fmt.Println("-> MASTER: slave counted PPN")
 		mpiSkipIncoming(TAG_ALL_MY_MESSAGES_REACHED_TARGET)
 	}
 	master.bcastTag(TAG_NEXT_PHASE)
@@ -105,7 +102,7 @@ func (master *masterNode) manageCCSearch() bool {
 	changed := false
 	for i := 0; i < master.slavesNum; i++ {
 		ch, _ := mpiRecvBool(TAG_SLAVE_WAS_CHANGED)
-		fmt.Println("slave wants to continue:", ch)
+		// fmt.Println("slave wants to continue:", ch)
 		changed = changed || ch
 	}
 
@@ -117,7 +114,9 @@ func (master *masterNode) manageCCSearch() bool {
 func (master *masterNode) collectResult() []uint32 {
 	res := make([]uint32, master.nodesNum)
 	master.bcastTag(TAG_SEND_ME_RESULT)
-	for i := 0; i < int(master.nodesNum); i++ {
+
+	for i := 0; i < int(master.slavesNum); i++ {
+		fmt.Println("COLLECT FROM NODE", i+1)
 		arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_I_SEND_RESULT)
 		x, xParent := C.getArray(arr, 0), C.getArray(arr, 1)
 		C.freeArray(arr)
@@ -129,7 +128,7 @@ func (master *masterNode) collectResult() []uint32 {
 func (master *masterNode) collectResultToTable(conf *algos.RunConfig) {
 	master.bcastTag(TAG_SEND_ME_RESULT)
 	total_res := make(map[uint32]uint32)
-	for i := 0; i < int(master.nodesNum); i++ {
+	for i := 0; i < int(master.slavesNum); i++ {
 		arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_I_SEND_RESULT)
 		x, xParent := uint32(C.getArray(arr, 0)), uint32(C.getArray(arr, 1))
 		C.freeArray(arr)
@@ -145,7 +144,6 @@ func (master *masterNode) collectResultToTable(conf *algos.RunConfig) {
 	}
 	os.Create(p)
 	if err := os.WriteFile(p, b.Bytes(), 0777); err != nil {
-		fmt.Println("CANT WRITE TO FILE")
 		panic(err)
 	}
 }

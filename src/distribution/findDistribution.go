@@ -19,12 +19,8 @@ func FindDistribution(iterator *graph.GraphIterator, numSlaves uint32, hashNum u
 	multiComponents := dist.findMulticomponents()
 
 	slavesHashes := dist.balanceHashes(multiComponents)
-	for i, x := range slavesHashes {
-		fmt.Println("    slave", i, "->", len(x), "hashes")
-	}
 
 	hashToSlave := dist.makeMapHashToSlave(slavesHashes)
-	fmt.Printf("-> {dist}: hashToSlave %v\n", hashToSlave)
 	// это во время выполнения реальной задачи не нужно:
 	dist.analyseDistrib(iterator, hashToSlave)
 
@@ -55,15 +51,19 @@ func (dist *Distributor) findMulticomponents() [][]uint32 {
 	multiG := dist.toGraph()
 	starForest := basic.BasicCCSearchRetArray(multiG)
 	multiComponents := utils.StarForestToComponents(starForest)
-	// fmt.Println(multiComponents)
+	// fmt.Println(multiComponesnts)
 	fmt.Printf("-> {dist}: detected %v multinodes and %v multiedges\n", float32(dist.hashNum), float32(len(dist.multiEdges)))
 	fmt.Printf("-> {dist}: found %v multicomponents\n", len(multiComponents))
 
 	// находим веса связных компонент
 	componentsWeight := make([]uint32, len(multiComponents))
+	k := uint32(dist.nodesNum / dist.hashNum)
 	for i := range multiComponents {
 		for _, multinodeNum := range multiComponents[i] {
-			componentsWeight[i] += dist.nodesWeight[multinodeNum]
+			componentsWeight[i] += k
+			if multinodeNum < dist.nodesNum%dist.hashNum {
+				componentsWeight[i]++
+			}
 		}
 	}
 	// и сортируем компоненты по весам
@@ -74,11 +74,14 @@ func (dist *Distributor) findMulticomponents() [][]uint32 {
 		}
 		return false
 	})
-	// fmt.Print("-> {dist}: 10 heaviest components: ")
-	// for i := 0; i < int(math.Min(float64(10), float64(len(multiComponents)))); i++ {
-	// fmt.Print(len(multiComponents[i]), ' ')
-	// }
-	// fmt.Println()
+	fmt.Print("-> {dist}: 10 heaviest components: ")
+	for i := 0; i < len(componentsWeight); i++ {
+		fmt.Print(componentsWeight[i], " ")
+		if i == 10 {
+			break
+		}
+	}
+	fmt.Println()
 
 	return multiComponents
 }
@@ -149,13 +152,13 @@ func (dist *Distributor) analyseDistrib(iterator *graph.GraphIterator, hashToSla
 		}
 	}
 
-	fmt.Println("-> {dist}: матрица A \"смежности\" хешей:")
-	fmt.Println("-> {dist}: A[i,j] = n - значит, что существует n ребер (v1,v2): h(v1) = i & h(v2) = j")
-	for _, row := range connectivityMatrix {
-		fmt.Print("    ")
-		for _, elem := range row {
-			fmt.Printf("%05d ", elem)
-		}
-		fmt.Println()
-	}
+	// fmt.Println("-> {dist}: матрица A \"смежности\" хешей:")
+	// fmt.Println("-> {dist}: A[i,j] = n - значит, что существует n ребер (v1,v2): h(v1) = i & h(v2) = j")
+	// for _, row := range connectivityMatrix {
+	// 	fmt.Print("    ")
+	// 	for _, elem := range row {
+	// 		fmt.Printf("%05d ", elem)
+	// 	}
+	// 	fmt.Println()
+	// }
 }

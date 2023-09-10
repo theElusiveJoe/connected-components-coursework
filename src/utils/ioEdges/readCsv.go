@@ -28,7 +28,7 @@ func createIndexAndPairsLists(rows [][]string) *graph.Graph {
 				mapa[row[i][i:]] = n
 				n++
 			}
-			edges[i] = append(edges[i], mapa[row[i]])
+			edges[i] = append(edges[i], mapa[row[i][i:]])
 		}
 	}
 

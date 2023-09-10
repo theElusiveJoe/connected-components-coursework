@@ -51,7 +51,7 @@ func runStep4Slave(tr *transRole) {
 						tr.talk("step: 4, seqs: %d of %d", confirmations, expectations)
 					}
 					arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_SC2)
-					tr.log("recv_tag_2")
+					// tr.log("recv_tag_2")
 					ppu, u := arr[0], arr[1]
 					tr.slave.setParentIfLess(u, ppu)
 				}
@@ -61,7 +61,7 @@ func runStep4Slave(tr *transRole) {
 			if mpiCheckIncoming(TAG_SC1) {
 				for mpiCheckIncoming(TAG_SC1) {
 					arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_SC1)
-					tr.log("recv_tag_1")
+					// tr.log("recv_tag_1")
 
 					pu, u := arr[0], arr[1]
 					ppu := tr.slave.getParent(pu)

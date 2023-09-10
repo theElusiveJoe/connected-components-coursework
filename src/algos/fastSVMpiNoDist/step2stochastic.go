@@ -59,7 +59,7 @@ func runStep2Slave(tr *transRole) {
 			if mpiCheckIncoming(TAG_SH3) {
 				for mpiCheckIncoming(TAG_SH3) {
 					arr, _ := mpiRecvUintArray(3, C.MPI_ANY_SOURCE, TAG_SH3)
-					tr.log("recv_tag_3")
+					// tr.log("recv_tag_3")
 					pu, ppv, N1 := arr[0], arr[1], arr[2]
 					tr.slave.setParentIfLess(pu, ppv)
 					// N4 -> N1: TAG4 SEND
@@ -72,7 +72,7 @@ func runStep2Slave(tr *transRole) {
 			if mpiCheckIncoming(TAG_SH2) {
 				for mpiCheckIncoming(TAG_SH2) {
 					arr, _ := mpiRecvUintArray(3, C.MPI_ANY_SOURCE, TAG_SH2)
-					tr.log("recv_tag_2")
+					// tr.log("recv_tag_2")
 					pu, pv, N1 := arr[0], arr[1], arr[2]
 					ppv := tr.slave.getParent(pv)
 					N4 := tr.getServer(pu)
@@ -86,7 +86,7 @@ func runStep2Slave(tr *transRole) {
 			if mpiCheckIncoming(TAG_SH1) {
 				for mpiCheckIncoming(TAG_SH1) {
 					arr, _ := mpiRecvUintArray(3, C.MPI_ANY_SOURCE, TAG_SH1)
-					tr.log("recv_tag_1")
+					// tr.log("recv_tag_1")
 					pu, v, N1 := arr[0], arr[1], arr[2]
 					pv := tr.slave.getParent(v)
 					N3 := tr.getServer(pv)

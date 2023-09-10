@@ -1,5 +1,6 @@
 main
 temp.csv
 tests/graphs*
-tests/biggraphs*
+tests/big*
 outputs/
+.ipynb_checkpoints

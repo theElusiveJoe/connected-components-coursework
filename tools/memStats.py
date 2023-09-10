@@ -2,7 +2,9 @@ import psutil
 import time
 import pandas as pd
 import sys
+import signal
 
+mem_df = None
 
 def fin_mpi_procs(ppid):
     procs = list()
@@ -22,24 +24,29 @@ def ps_mem(procs):
 
 
 def log_procs_mem_consumpiton(ppid):
-    try:
-        procs = fin_mpi_procs(ppid)
-        print('here procs:', [p.pid for p in procs])
-        mem_df = pd.DataFrame(columns=['time'] + [proc.pid for proc in procs])
-        
-        while True:
-            try:
-                new_row = ps_mem(procs)
-                mem_df.loc[len(mem_df)] = new_row
-                print(new_row)
-                time.sleep(0.05)
-            except:
-                mem_df = mem_df.set_index(mem_df['time'])
-                mem_df = mem_df.drop(['time'], axis=1)
-                mem_df.to_csv('mem.csv')
-                sys.exit(0)
-    except Exception as e:
-        print(e)
+    global mem_df
+    procs = fin_mpi_procs(ppid)
+    mem_df = pd.DataFrame(columns=['time'] + [proc.pid for proc in procs])
+    
+    while True:
+        try:
+            new_row = ps_mem(procs)
+            mem_df.loc[len(mem_df)] = new_row
+            time.sleep(0.05)
+        except psutil.ZombieProcess:
+            continue
+        except psutil.NoSuchProcess:
+            continue
+
+def signal_handler(sig, frame):
+    global mem_df
+    mem_df = mem_df.set_index(mem_df['time'])
+    mem_df = mem_df.drop(['time'], axis=1)
+    mem_df.to_csv('mem.csv')
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
     ppid = int(sys.argv[1])

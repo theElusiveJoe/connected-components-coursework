@@ -41,11 +41,11 @@ func (slave *slaveNode) print() {
 	fmt.Println(
 		fmt.Sprintf("SLAVE %d {\n", slave.rank),
 		"  edges:", slave.edgesNum, "\n",
-		" ", slave.edges1, "\n",
-		" ", slave.edges2, "\n",
-		"  parents:", slave.f, "\n",
+		// " ", slave.edges1, "\n",
+		// " ", slave.edges2, "\n",
+		// "  parents:", slave.f, "\n",
 		// "  distrib:", slave.distribution, "\n",
-		"  fparents:", slave.foreignf, "\n}",
+		// "  fparents:", slave.foreignf, "\n}",
 	)
 }
 
@@ -57,8 +57,7 @@ func (slave *slaveNode) log(format string, args ...any) {
 	msg += fmt.Sprintf(format, args...)
 	msg += "\n"
 	s := []byte(msg)
-
-	file, err := os.OpenFile("log2.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+	file, err := os.OpenFile("log.txt", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
 		panic(err)
 	}
@@ -72,8 +71,6 @@ func (slave *slaveNode) addEdge(v1 uint32, v2 uint32, v2er uint32) {
 	slave.edges2 = append(slave.edges2, v2)
 	slave.f[v1] = v1
 	if v2er != uint32(slave.rank) {
-		fmt.Printf("INTERNODE EDGE BETWEEN %d and %d (%d-%d)\n", slave.rank, v2er, v1, v2)
-		// slave.distribution[v2] = v2er
 		slave.foreignf[v2] = v2
 	} else {
 		slave.f[v2] = v2
@@ -87,7 +84,6 @@ func (slave *slaveNode) getEdge(i int) (uint32, uint32) {
 	return slave.edges1[i], slave.edges2[i]
 }
 func (slave *slaveNode) getServer(v uint32) uint32 {
-	// return slave.distribution[v]
 	return v%uint32(slave.slavesNum) + 1
 }
 
@@ -155,21 +151,13 @@ func (slave *slaveNode) countExpectedParentProposalsNum() {
 		v2er := slave.getServer(v2)
 		for mpiCheckIncoming(TAG_BRUH_I_ALREADY_KNEW) {
 			mpiSkipIncoming(TAG_BRUH_I_ALREADY_KNEW)
-			slave.log("resv_tag_already_knew")
 			counter--
-			if slave.rank == 1 {
-				fmt.Println("HE KNew", counter)
-			}
 		}
 		for mpiCheckIncoming(TAG_UR_INNER_NODE_IS_MY_FOREIGN) {
 			mpiSkipIncomingAndResponce(TAG_UR_INNER_NODE_IS_MY_FOREIGN, TAG_BRUH_I_ALREADY_KNEW)
-			slave.log("resv_ur_inner_my_foreign")
-			slave.log("send_tag_already_knew")
-
 			slave.expectedParentProposalsNum++
 		}
 		mpiSendTag(TAG_UR_INNER_NODE_IS_MY_FOREIGN, int(v2er))
-		slave.log("send_ur_inner_my_foreign")
 
 		counter++
 	}
@@ -177,17 +165,10 @@ func (slave *slaveNode) countExpectedParentProposalsNum() {
 	for counter != 0 {
 		for mpiCheckIncoming(TAG_BRUH_I_ALREADY_KNEW) {
 			mpiSkipIncoming(TAG_BRUH_I_ALREADY_KNEW)
-			slave.log("resv_tag_already_knew")
 			counter--
-			if slave.rank == 1 {
-				fmt.Println("HE KNew", counter)
-			}
 		}
 		for mpiCheckIncoming(TAG_UR_INNER_NODE_IS_MY_FOREIGN) {
 			mpiSkipIncomingAndResponce(TAG_UR_INNER_NODE_IS_MY_FOREIGN, TAG_BRUH_I_ALREADY_KNEW)
-			slave.log("resv_ur_inner_my_foreign")
-			slave.log("send_tag_already_knew")
-
 			slave.expectedParentProposalsNum++
 		}
 	}
@@ -195,13 +176,9 @@ func (slave *slaveNode) countExpectedParentProposalsNum() {
 	for {
 		for mpiCheckIncoming(TAG_UR_INNER_NODE_IS_MY_FOREIGN) {
 			mpiSkipIncomingAndResponce(TAG_UR_INNER_NODE_IS_MY_FOREIGN, TAG_BRUH_I_ALREADY_KNEW)
-			slave.log("resv_ur_inner_my_foreign")
-			slave.log("send_tag_already_knew")
-
 			slave.expectedParentProposalsNum++
 		}
 		if mpiCheckIncoming(TAG_NEXT_PHASE) {
-			fmt.Println("-> SLAVE: PPN next phase")
 			return
 		}
 	}
@@ -247,7 +224,7 @@ func (slave *slaveNode) runParentProposals() bool {
 		for mpiCheckIncoming(TAG_V1_PARENT_PROPOSITION) {
 			slave.recievedParentProposalsNum++
 			arr, _ := mpiRecvUintArray(2, C.MPI_ANY_SOURCE, TAG_V1_PARENT_PROPOSITION)
-			slave.log("resv_tag_parent_proposal")
+			slave.log("recv_tag_1")
 			v1, parentProposition := cGetArr(arr, 0), cGetArr(arr, 1)
 			// fmt.Printf("slave %d: should i set f[ %d ] = %d: %t\n", slave.rank, v1, parentProposition, slave.getParent(v1) > parentProposition)
 			C.freeArray(arr)
@@ -264,7 +241,7 @@ func (slave *slaveNode) runParentProposals() bool {
 		// fmt.Println(slave.rank, "->", foreignNoder, "set f[", foreignNode, "] =", proposedParent)
 		mpiSendUintArray([]uint32{foreignNode, proposedParent}, int(foreignNoder),
 			TAG_V1_PARENT_PROPOSITION)
-		slave.log("send_tag_parent_proposal")
+		slave.log("send_tag_1")
 
 	}
 
